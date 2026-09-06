@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Маркус-март{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Иконка в закладке браузера (Favicon) -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
@@ -21,7 +21,7 @@
                 <div class="logo-text">Маркус<span>-март</span></div>
             </a>
             <div class="nav-links">
-                <span class="nav-slogan">Всё для туриста. Всё после сплава.</span>
+                <span class="nav-slogan">Мелочи, которые спасают сплав! 🛶</span>
                 <a href="{{ url_for('index') }}" class="nav-link">Каталог</a>
                 {% if session.admin %}
                     <a href="{{ url_for('admin_panel') }}" class="nav-link nav-link-admin">⚙️ Админка</a>

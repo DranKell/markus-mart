@@ -3,7 +3,7 @@
    Переключение через data-theme на <html>
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ─── ТЁМНАЯ ТЕМА (по умолчанию) ─── */
 :root {
@@ -1752,16 +1752,29 @@ code {
    ═══════════════════════════════════════════════════════════════ */
 
 .nav-slogan {
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    font-style: italic;
-    margin-right: 16px;
-    display: none; /* скрыт на мобильных */
+    font-family: 'Caveat', cursive, sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 55%, #ea580c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.3));
+    margin-right: 18px;
+    display: none;
+    transform: rotate(-1.5deg);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
 }
 
-@media (min-width: 768px) {
+.nav-slogan:hover {
+    transform: rotate(0deg) scale(1.06);
+}
+
+@media (min-width: 860px) {
     .nav-slogan {
-        display: inline;
+        display: inline-flex;
+        align-items: center;
     }
 }
 
