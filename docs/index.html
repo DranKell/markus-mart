@@ -245,9 +245,60 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
+            }
+            .outdoor-hero-banner {
+                padding: 24px 0 20px;
+            }
+            .section-title {
+                font-size: 1.85rem !important;
+            }
+            .section-subtitle {
+                font-size: 0.95rem !important;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .filter-pills {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 6px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .filter-pill {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .search-box {
+                max-width: 100%;
+                min-width: 0;
+            }
+            .modal-content {
+                padding: 20px 16px;
+                margin: 12px;
+                max-height: 94vh;
+                border-radius: 16px;
+            }
+            .admin-table th, .admin-table td {
+                padding: 8px 6px;
+                font-size: 0.8rem;
+            }
+        }
         @media (max-width: 480px) {
             .hero-features-grid {
                 grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .hero-feature-card {
+                padding: 12px 14px;
+            }
+            .nav-link-admin {
+                padding: 6px 10px;
+                font-size: 0.78rem;
             }
         }
         .admin-tabs-nav {
