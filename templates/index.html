@@ -129,40 +129,64 @@
     </div>
 </div>
 
-<!-- МОДАЛКА: Отложить -->
+<!-- МОДАЛКА: Отложить (Прямой контакт: Email с авто-текстом и Телефон) -->
 <div id="reserveModal" class="modal">
     <div class="modal-overlay" onclick="closeReserveModal()"></div>
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 500px;">
         <button class="modal-close" onclick="closeReserveModal()">&times;</button>
-        <h3>📌 Отложить товар</h3>
-        <div class="modal-product-info">
+        <h3 style="margin-bottom: 8px;">📌 Отложить снаряжение</h3>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:18px;">
+            Свяжитесь с нами напрямую для бронирования. Нажмите на почту или телефон, чтобы мгновенно открыть приложение:
+        </p>
+        
+        <div class="modal-product-info" style="margin-bottom: 18px;">
             <p id="modalProductName" class="modal-product-name"></p>
             <p id="modalProductPrice" class="modal-product-price"></p>
         </div>
-        <div id="queueInfo" class="queue-info" style="display:none;">
-            <div class="queue-info-num" id="queuePosition">—</div>
-            <div class="queue-info-label">ваша позиция в очереди</div>
+
+        <div class="direct-contacts-list">
+            <!-- Кнопка Email -->
+            <a id="reserveEmailLink" href="#" class="direct-contact-card" title="Написать на почту">
+                <div class="direct-contact-icon-wrapper direct-contact-icon-mail">
+                    ✉️
+                </div>
+                <div class="direct-contact-info">
+                    <div class="direct-contact-label">Написать на Email продавца</div>
+                    <div class="direct-contact-val" id="reserveEmailVal">info@markus-mart.ru</div>
+                    <div class="direct-contact-hint">Тема и данные заказа уже будут заполнены</div>
+                </div>
+                <div class="direct-contact-action direct-contact-action-mail">
+                    Написать
+                </div>
+            </a>
+
+            <!-- Кнопка Телефон -->
+            <a id="reservePhoneLink" href="#" class="direct-contact-card" title="Позвонить продавцу">
+                <div class="direct-contact-icon-wrapper direct-contact-icon-phone">
+                    📞
+                </div>
+                <div class="direct-contact-info">
+                    <div class="direct-contact-label">Позвонить продавцу</div>
+                    <div class="direct-contact-val" id="reservePhoneVal">+7 (999) 123-45-67</div>
+                    <div class="direct-contact-hint">Нажмите для прямого вызова</div>
+                </div>
+                <div class="direct-contact-action direct-contact-action-phone">
+                    Вызов
+                </div>
+            </a>
         </div>
-        <form id="reserveForm" method="POST" action="">
-            <div class="form-group">
-                <label for="customer_name">Ваше имя *</label>
-                <input type="text" id="customer_name" name="customer_name" required class="form-input" placeholder="Иван Иванов">
-            </div>
-            <div class="form-group">
-                <label for="customer_phone">Телефон *</label>
-                <input type="tel" id="customer_phone" name="customer_phone" required class="form-input" placeholder="+7 (999) 123-45-67">
-            </div>
-            <div class="form-group">
-                <label for="customer_email">Email</label>
-                <input type="email" id="customer_email" name="customer_email" class="form-input" placeholder="ivan@example.com">
-            </div>
-            <div class="form-group">
-                <label for="note">Примечание</label>
-                <textarea id="note" name="note" rows="2" class="form-input" placeholder="Количество, дата получения..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">✅ Подтвердить</button>
-            <p class="form-hint">Мы свяжемся с вами в ближайшее время</p>
-        </form>
+
+        <!-- Превью текста, который подставится в письмо -->
+        <div class="order-preview-box">
+            <div class="order-preview-title">📝 Текст заказа для письма:</div>
+            <div id="reserveEmailBodyPreview" style="font-style: italic; word-break: break-word;"></div>
+        </div>
+
+        <div style="margin-top: 18px; text-align: center;">
+            <button type="button" class="btn btn-outline btn-full" onclick="closeReserveModal()" style="font-size: 0.9rem; padding: 10px;">
+                Закрыть
+            </button>
+        </div>
     </div>
 </div>
 

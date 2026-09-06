@@ -670,7 +670,7 @@ function closeZoom() {
     document.body.style.overflow = '';
 }
 
-// ─── ОФОРМЛЕНИЕ БРОНИРОВАНИЯ ───
+// ─── ОФОРМЛЕНИЕ БРОНИРОВАНИЯ (ПРЯМАЯ СВЯЗЬ: ПОЧТА И ЗВОНОК) ───
 let currentReserveProductId = null;
 
 function openReserveModal(productId, productName, productPrice) {
@@ -678,36 +678,62 @@ function openReserveModal(productId, productName, productPrice) {
     const modal = document.getElementById('reserveModal');
     const nameEl = document.getElementById('modalProductName');
     const priceEl = document.getElementById('modalProductPrice');
-    const queueInfo = document.getElementById('queueInfo');
+    const emailValEl = document.getElementById('reserveEmailVal');
+    const phoneValEl = document.getElementById('reservePhoneVal');
+    const emailLinkEl = document.getElementById('reserveEmailLink');
+    const phoneLinkEl = document.getElementById('reservePhoneLink');
+    const previewEl = document.getElementById('reserveEmailBodyPreview');
 
-    nameEl.textContent = productName;
-    priceEl.textContent = (typeof productPrice === 'number' && productPrice > 0)
+    if (nameEl) nameEl.textContent = productName;
+    const priceFormatted = (typeof productPrice === 'number' && productPrice > 0)
         ? productPrice.toLocaleString('ru-RU') + ' ₽'
         : 'По запросу';
+    if (priceEl) priceEl.textContent = priceFormatted;
 
-    // Расчет текущей очереди
-    const existingCount = getReservations().filter(r => r.productId === productId).length;
-    if (existingCount > 0 && queueInfo) {
-        document.getElementById('queuePosition').textContent = existingCount + 1;
-        queueInfo.style.display = 'block';
-    } else if (queueInfo) {
-        queueInfo.style.display = 'none';
+    // Получаем текущие контакты администратора из настроек
+    const s = getEmailSettings();
+    const adminEmail = s.admin_email || 'admin@markus-mart.ru';
+    const adminPhone = s.admin_phone || '+7 (999) 123-45-67';
+
+    if (emailValEl) emailValEl.textContent = adminEmail;
+    if (phoneValEl) phoneValEl.textContent = adminPhone;
+
+    // Формируем текст темы и тела письма для почтовой программы
+    const emailSubject = `Бронирование: ${productName} (Маркус-март)`;
+    const emailBody = `Здравствуйте!
+
+Хочу заказать / отложить товар в магазине Маркус-март:
+• Наименование: ${productName}
+• Стоимость: ${priceFormatted}
+
+Контакты для связи и детали заказа:
+Имя / Клуб: 
+Телефон: 
+Количество / Комментарий: `;
+
+    if (previewEl) {
+        previewEl.innerHTML = `<strong>Тема:</strong> ${emailSubject}<br><br>${emailBody.replace(/\n/g, '<br>')}`;
+    }
+
+    // Ссылка mailto для запуска стандартного почтового клиента
+    if (emailLinkEl) {
+        emailLinkEl.href = `mailto:${encodeURIComponent(adminEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    }
+
+    // Ссылка tel для запуска телефонного звонка
+    if (phoneLinkEl) {
+        const cleanPhone = adminPhone.replace(/[^\d+]/g, '');
+        phoneLinkEl.href = `tel:${cleanPhone}`;
     }
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => {
-        const input = document.getElementById('customer_name');
-        if (input) input.focus();
-    }, 100);
 }
 
 function closeReserveModal() {
     const modal = document.getElementById('reserveModal');
     if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
-    const form = document.getElementById('reserveForm');
-    if (form) form.reset();
 }
 
 function handleReserveSubmit(e) {
@@ -802,20 +828,21 @@ function handleSearch(query) {
     filterProducts(category, activePill);
 }
 
-// ─── НАСТРОЙКИ ПОЧТЫ (EMAIL & SMTP) ───
+// ─── НАСТРОЙКИ ПОЧТЫ И СВЯЗИ (EMAIL, ТЕЛЕФОН & SMTP) ───
 const defaultEmailSettings = {
     smtp_user: "info@markus-mart.ru",
     smtp_password: "",
     smtp_server: "smtp.yandex.ru",
     smtp_port: "465",
     admin_email: "admin@markus-mart.ru",
+    admin_phone: "+7 (999) 123-45-67",
     same_email: false
 };
 
 function getEmailSettings() {
     try {
         const stored = localStorage.getItem('markus_email_settings');
-        if (stored) return JSON.parse(stored);
+        if (stored) return { ...defaultEmailSettings, ...JSON.parse(stored) };
     } catch (e) {}
     return defaultEmailSettings;
 }
@@ -831,6 +858,7 @@ function loadEmailSettings() {
     const serverEl = document.getElementById('adminSmtpServer');
     const portEl = document.getElementById('adminSmtpPort');
     const adminEmailEl = document.getElementById('adminRecipientEmail');
+    const adminPhoneEl = document.getElementById('adminContactPhone');
     const sameCheckbox = document.getElementById('adminSameEmailCheckbox');
 
     if (userEl) userEl.value = s.smtp_user || '';
@@ -838,6 +866,7 @@ function loadEmailSettings() {
     if (serverEl) serverEl.value = s.smtp_server || 'smtp.yandex.ru';
     if (portEl) portEl.value = s.smtp_port || '465';
     if (adminEmailEl) adminEmailEl.value = s.admin_email || '';
+    if (adminPhoneEl) adminPhoneEl.value = s.admin_phone || '+7 (999) 123-45-67';
     if (sameCheckbox) {
         const isSame = s.same_email || (s.smtp_user && s.smtp_user === s.admin_email);
         sameCheckbox.checked = isSame;
@@ -888,18 +917,20 @@ function handleEmailSettingsSubmit(e) {
     const sameCheckbox = document.getElementById('adminSameEmailCheckbox');
     const sender = document.getElementById('adminSmtpUser').value.trim();
     const recipient = document.getElementById('adminRecipientEmail').value.trim();
+    const contactPhone = (document.getElementById('adminContactPhone') ? document.getElementById('adminContactPhone').value.trim() : '') || '+7 (999) 123-45-67';
     const settings = {
         smtp_user: sender,
         smtp_password: document.getElementById('adminSmtpPassword').value,
         smtp_server: document.getElementById('adminSmtpServer').value.trim(),
         smtp_port: document.getElementById('adminSmtpPort').value.trim(),
         admin_email: sameCheckbox && sameCheckbox.checked ? sender : recipient,
+        admin_phone: contactPhone,
         same_email: sameCheckbox ? sameCheckbox.checked : false
     };
     saveEmailSettings(settings);
     const alertBox = document.getElementById('emailSettingsSavedAlert');
     if (alertBox) {
-        alertBox.innerHTML = `✅ Настройки почты успешно сохранены!<br>Все новые заказы будут отправляться на адрес: <strong>${settings.admin_email}</strong>`;
+        alertBox.innerHTML = `✅ Настройки связи успешно сохранены!<br>Email для заказов: <strong>${settings.admin_email}</strong><br>Телефон для клиентов: <strong>${settings.admin_phone}</strong>`;
         alertBox.style.display = 'block';
         setTimeout(() => alertBox.style.display = 'none', 5000);
     }

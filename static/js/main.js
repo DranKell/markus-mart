@@ -136,36 +136,72 @@ function closeZoom() {
     document.body.style.overflow = '';
 }
 
-// ─── МОДАЛКА: Отложить ───
+// ─── МОДАЛКА: Отложить (Прямой контакт: Email с авто-текстом и Телефон) ───
 function openReserveModal(productId, productName, productPrice) {
     const modal = document.getElementById('reserveModal');
-    const form = document.getElementById('reserveForm');
     const nameEl = document.getElementById('modalProductName');
     const priceEl = document.getElementById('modalProductPrice');
-    const queueInfo = document.getElementById('queueInfo');
-    const queuePos = document.getElementById('queuePosition');
+    const emailValEl = document.getElementById('reserveEmailVal');
+    const phoneValEl = document.getElementById('reservePhoneVal');
+    const emailLinkEl = document.getElementById('reserveEmailLink');
+    const phoneLinkEl = document.getElementById('reservePhoneLink');
+    const previewEl = document.getElementById('reserveEmailBodyPreview');
 
-    form.action = '/reserve/' + productId;
-    nameEl.textContent = productName;
-    priceEl.textContent = productPrice.toLocaleString('ru-RU') + ' ₽';
+    if (nameEl) nameEl.textContent = productName;
+    const priceFormatted = (typeof productPrice === 'number' && productPrice > 0)
+        ? productPrice.toLocaleString('ru-RU') + ' ₽'
+        : 'По запросу';
+    if (priceEl) priceEl.textContent = priceFormatted;
 
-    const data = productsData[productId];
-    if (data && data.queueLength > 0) {
-        queuePos.textContent = data.queueLength + 1;
-        queueInfo.style.display = 'block';
-    } else {
-        queueInfo.style.display = 'none';
+    // Контакты продавца (можно настроить в админке или по умолчанию)
+    let adminEmail = 'info@markus-mart.ru';
+    let adminPhone = '+7 (999) 123-45-67';
+    try {
+        const stored = localStorage.getItem('markus_email_settings');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed.admin_email) adminEmail = parsed.admin_email;
+            if (parsed.admin_phone) adminPhone = parsed.admin_phone;
+        }
+    } catch(e) {}
+
+    if (emailValEl) emailValEl.textContent = adminEmail;
+    if (phoneValEl) phoneValEl.textContent = adminPhone;
+
+    // Формируем текст темы и тела письма для почтовой программы
+    const emailSubject = `Бронирование: ${productName} (Маркус-март)`;
+    const emailBody = `Здравствуйте!
+
+Хочу заказать / отложить товар в магазине Маркус-март:
+• Наименование: ${productName}
+• Стоимость: ${priceFormatted}
+
+Контакты для связи и детали заказа:
+Имя / Клуб: 
+Телефон: 
+Количество / Комментарий: `;
+
+    if (previewEl) {
+        previewEl.innerHTML = `<strong>Тема:</strong> ${emailSubject}<br><br>${emailBody.replace(/\n/g, '<br>')}`;
+    }
+
+    if (emailLinkEl) {
+        emailLinkEl.href = `mailto:${encodeURIComponent(adminEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    }
+
+    if (phoneLinkEl) {
+        const cleanPhone = adminPhone.replace(/[^\d+]/g, '');
+        phoneLinkEl.href = `tel:${cleanPhone}`;
     }
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => document.getElementById('customer_name').focus(), 100);
 }
 
 function closeReserveModal() {
-    document.getElementById('reserveModal').classList.remove('active');
+    const modal = document.getElementById('reserveModal');
+    if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
-    document.getElementById('reserveForm').reset();
 }
 
 // Закрытие по Escape

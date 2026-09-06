@@ -325,6 +325,108 @@
             color: var(--accent);
             border-bottom-color: var(--accent);
         }
+
+        /* ─── Стили окна прямых контактов (Email / Телефон) ─── */
+        .direct-contact-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 14px;
+            position: relative;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+        }
+        .direct-contact-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.25);
+        }
+        .direct-contact-icon-wrapper {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .direct-contact-icon-mail {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.3));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .direct-contact-icon-phone {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.3));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+        .direct-contact-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .direct-contact-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .direct-contact-val {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.15rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+        }
+        .direct-contact-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+        .direct-contact-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .direct-contact-action-mail {
+            background: var(--accent);
+            color: #fff;
+        }
+        .direct-contact-action-phone {
+            background: #22c55e;
+            color: #fff;
+        }
+        .order-preview-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 14px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+        .order-preview-title {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -588,6 +690,15 @@
                         <input type="email" id="adminRecipientEmail" required class="form-input" placeholder="admin@markus-mart.ru">
                     </div>
 
+                    <h4 style="margin: 16px 0 10px; color:var(--accent); font-size:1rem;">3. Контактный телефон для клиентов (для звонков при бронировании)</h4>
+                    <div class="form-group">
+                        <label for="adminContactPhone">Номер телефона для звонков и мессенджеров</label>
+                        <input type="tel" id="adminContactPhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                        <span style="font-size:0.78rem; color:var(--text-muted); margin-top:4px; display:block;">
+                            Этот телефон и email будут показаны клиенту при нажатии на «Отложить»
+                        </span>
+                    </div>
+
                     <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
                         <button type="submit" class="btn btn-primary" style="flex:2; min-width:200px;">💾 Сохранить настройки почты</button>
                         <button type="button" class="btn btn-outline" style="flex:1; min-width:180px; border-color:var(--accent); color:var(--accent);" onclick="testEmailSend()">
@@ -636,42 +747,64 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА: Отложить (Форма бронирования для туриста) -->
+    <!-- МОДАЛКА: Отложить (Прямой контакт: Email с авто-текстом и Телефон) -->
     <div id="reserveModal" class="modal">
         <div class="modal-overlay" onclick="closeReserveModal()"></div>
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <button class="modal-close" onclick="closeReserveModal()">&times;</button>
-            <h3>📌 Бронирование расходников</h3>
-            <div class="modal-product-info">
+            <h3 style="margin-bottom: 8px;">📌 Отложить снаряжение</h3>
+            <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:18px;">
+                Свяжитесь с нами напрямую для бронирования. Нажмите на почту или телефон, чтобы мгновенно открыть приложение:
+            </p>
+            
+            <div class="modal-product-info" style="margin-bottom: 18px;">
                 <p id="modalProductName" class="modal-product-name"></p>
                 <p id="modalProductPrice" class="modal-product-price"></p>
             </div>
-            <div id="queueInfo" class="queue-info" style="display:none;">
-                <div class="queue-info-num" id="queuePosition">—</div>
-                <div class="queue-info-label">ваша позиция в очереди бронирования</div>
+
+            <div class="direct-contacts-list">
+                <!-- Кнопка Email -->
+                <a id="reserveEmailLink" href="#" class="direct-contact-card" title="Написать на почту">
+                    <div class="direct-contact-icon-wrapper direct-contact-icon-mail">
+                        ✉️
+                    </div>
+                    <div class="direct-contact-info">
+                        <div class="direct-contact-label">Написать на Email продавца</div>
+                        <div class="direct-contact-val" id="reserveEmailVal">admin@markus-mart.ru</div>
+                        <div class="direct-contact-hint">Тема и данные заказа уже будут заполнены</div>
+                    </div>
+                    <div class="direct-contact-action direct-contact-action-mail">
+                        Написать
+                    </div>
+                </a>
+
+                <!-- Кнопка Телефон -->
+                <a id="reservePhoneLink" href="#" class="direct-contact-card" title="Позвонить продавцу">
+                    <div class="direct-contact-icon-wrapper direct-contact-icon-phone">
+                        📞
+                    </div>
+                    <div class="direct-contact-info">
+                        <div class="direct-contact-label">Позвонить продавцу</div>
+                        <div class="direct-contact-val" id="reservePhoneVal">+7 (999) 123-45-67</div>
+                        <div class="direct-contact-hint">Нажмите для прямого вызова</div>
+                    </div>
+                    <div class="direct-contact-action direct-contact-action-phone">
+                        Вызов
+                    </div>
+                </a>
             </div>
-            <form id="reserveForm" onsubmit="handleReserveSubmit(event)">
-                <div class="form-group">
-                    <label for="customer_name">Ваше имя или название турклуба *</label>
-                    <input type="text" id="customer_name" required class="form-input" placeholder="Дмитрий (Клуб Сплав)">
-                </div>
-                <div class="form-group">
-                    <label for="customer_phone">Телефон для связи *</label>
-                    <input type="tel" id="customer_phone" required class="form-input" placeholder="+7 (999) 123-45-67">
-                </div>
-                <div class="form-group">
-                    <label for="customer_email">Электронная почта</label>
-                    <input type="email" id="customer_email" class="form-input" placeholder="turist@example.ru">
-                </div>
-                <div class="form-group">
-                    <label for="note">Комментарий / количество / дата старта сплава</label>
-                    <textarea id="note" rows="2" class="form-input" placeholder="Нужно 4 хомута 40 мм, выезжаем в пятницу..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">✅ Забронировать</button>
-                <p class="form-hint" style="text-align:center; margin-top:10px; color:var(--text-muted); font-size:0.8rem;">
-                    Заявка мгновенно поступит в админку продавца
-                </p>
-            </form>
+
+            <!-- Превью текста, который подставится в письмо -->
+            <div class="order-preview-box">
+                <div class="order-preview-title">📝 Текст заказа для письма:</div>
+                <div id="reserveEmailBodyPreview" style="font-style: italic; word-break: break-word;"></div>
+            </div>
+
+            <div style="margin-top: 18px; text-align: center;">
+                <button type="button" class="btn btn-outline btn-full" onclick="closeReserveModal()" style="font-size: 0.9rem; padding: 10px;">
+                    Закрыть
+                </button>
+            </div>
         </div>
     </div>
 
