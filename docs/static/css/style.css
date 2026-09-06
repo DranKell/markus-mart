@@ -2061,14 +2061,17 @@ code {
         gap: 12px;
     }
     .filter-pills {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 6px;
-        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        overflow-x: visible;
+        padding-bottom: 0;
     }
     .filter-pill {
-        white-space: nowrap;
-        flex-shrink: 0;
+        white-space: normal;
+        flex: 0 0 auto;
+        text-align: center;
+        line-height: 1.25;
     }
     .search-box {
         max-width: 100%;
@@ -2103,9 +2106,12 @@ code {
         font-size: 0.72rem;
         line-height: 1.25;
     }
+    .filter-pills {
+        gap: 6px;
+    }
     .filter-pill {
-        padding: 6px 14px;
-        font-size: 0.8rem;
+        padding: 7px 13px;
+        font-size: 0.78rem;
     }
     .nav-link-admin {
         padding: 6px 10px;
