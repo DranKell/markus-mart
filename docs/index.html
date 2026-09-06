@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Маркус-март — Снаряжение и аксессуары для туризма</title>
-    <meta name="description" content="Интернет-витрина снаряжения и аксессуаров для сплавов, туризма и активного отдыха. Хомуты для катамаранов, палатки, рюкзаки.">
+    <title>Маркус-март — Экстренные расходники и снаряжение для туристов</title>
+    <meta name="description" content="Магазин товаров, которые постоянно теряются на сплавах и в походах: хомуты для катамарана 40 мм, колышки для палаток, ремнаборы для дуг, фастексы.">
     <link rel="stylesheet" href="./static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
         .filter-bar {
             display: flex;
             align-items: center;
@@ -92,6 +97,14 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
         .admin-table {
             width: 100%;
             border-collapse: collapse;
@@ -132,23 +145,51 @@
             margin: 10px 0 16px;
         }
         .outdoor-hero-banner {
-            background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0) 100%);
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 23, 42, 0) 100%);
             border-bottom: 1px solid var(--border);
-            padding: 32px 0 20px;
+            padding: 36px 0 24px;
             margin-bottom: 24px;
         }
         .hero-features {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             flex-wrap: wrap;
-            margin-top: 16px;
+            margin-top: 18px;
         }
         .hero-feature-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             font-size: 0.88rem;
             color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+        }
+        .admin-tabs-nav {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .admin-tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .admin-tab-btn:hover {
+            color: var(--text-primary);
+        }
+        .admin-tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
         }
     </style>
 </head>
@@ -161,29 +202,33 @@
                 <div class="logo-text">Маркус<span>-март</span></div>
             </a>
             <div class="nav-links">
-                <span class="nav-slogan">Всё для туриста. Всё после сплава.</span>
+                <span class="nav-slogan">Всё то, что постоянно теряется на сплаве!</span>
                 <a href="#catalog" class="nav-link">Каталог</a>
-                <button class="nav-link nav-link-admin" onclick="openAdminModal()" style="background:none; border:none; cursor:pointer;">
-                    ⚙️ Заказы / Админка <span class="badge-count" id="ordersBadge">0</span>
+                <button class="nav-link nav-link-admin" id="adminNavBtn" onclick="onAdminNavClick()" style="background:none; border:none; cursor:pointer;">
+                    🔐 Вход в админку <span class="badge-count" id="ordersBadge"></span>
                 </button>
                 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Переключить тему">☀️</button>
             </div>
         </div>
     </nav>
 
-    <!-- ГЛАВНЫЙ БЛОК -->
+    <!-- ГЛАВНЫЙ БАННЕР КОНЦЕПЦИИ МАГАЗИНА -->
     <div class="outdoor-hero-banner">
         <div class="container">
-            <h1 class="section-title" style="font-size: 2.2rem; margin-bottom: 8px;">
-                Снаряжение & Комплектующие для сплавов
+            <span style="color:var(--accent); font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+                Магазин туристических расходников и потеряшек
+            </span>
+            <h1 class="section-title" style="font-size: 2.3rem; margin: 8px 0 10px;">
+                То, что вечно теряется на реке и в горах
             </h1>
-            <p class="section-subtitle" style="max-width: 720px;">
-                Надёжные детали для катамаранов, экспедиционное снаряжение и аксессуары для активного туризма. Онлайн-бронирование и быстрая комплектация.
+            <p class="section-subtitle" style="max-width: 780px; font-size: 1.05rem;">
+                Скобы и хомуты для рамы катамарана 40 мм, трёхгранные штормовые колышки для палаток, ремнаборы для сломанных дуг, фастексы и клапаны. Всё то, что забывается на стоянках или уплывает по реке!
             </p>
             <div class="hero-features">
-                <div class="hero-feature-item"><span>⛺</span> Проверено на бурной воде</div>
-                <div class="hero-feature-item"><span>⚡</span> Быстрое бронирование</div>
-                <div class="hero-feature-item"><span>📦</span> Хомуты 40 мм всегда в наличии</div>
+                <div class="hero-feature-item"><span>🛶</span> <strong>Скобы 40 мм</strong> всегда в наличии</div>
+                <div class="hero-feature-item"><span>⛺</span> <strong>Колышки Y-Beam</strong> со светоотражателем</div>
+                <div class="hero-feature-item"><span>🔧</span> <strong>Ремнаборы</strong> для дуг палаток и ПВХ</div>
+                <div class="hero-feature-item"><span>⚡</span> <strong>Быстрое бронирование</strong> без предоплаты</div>
             </div>
         </div>
     </div>
@@ -194,226 +239,165 @@
             <!-- Панель фильтров и поиска -->
             <div class="filter-bar">
                 <div class="filter-pills">
-                    <button class="filter-pill active" data-category="all" onclick="filterProducts('all', this)">Все товары (8)</button>
-                    <button class="filter-pill" data-category="rafting" onclick="filterProducts('rafting', this)">🌊 Для сплавов и катамаранов</button>
-                    <button class="filter-pill" data-category="gear" onclick="filterProducts('gear', this)">🎒 Туристическое снаряжение</button>
+                    <button class="filter-pill active" data-category="all" onclick="filterProducts('all', this)">Все расходники (10)</button>
+                    <button class="filter-pill" data-category="rafting" onclick="filterProducts('rafting', this)">🌊 Для катамаранов и сплавов</button>
+                    <button class="filter-pill" data-category="tent" onclick="filterProducts('tent', this)">⛺ Колышки и дуги палаток</button>
+                    <button class="filter-pill" data-category="hardware" onclick="filterProducts('hardware', this)">🔧 Фурнитура и ремнаборы</button>
                     <button class="filter-pill" data-category="stock" onclick="filterProducts('stock', this)">✅ В наличии</button>
                 </div>
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию..." oninput="handleSearch(this.value)">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск: хомуты, колышки, дуги..." oninput="handleSearch(this.value)">
                 </div>
             </div>
 
-            <!-- Сетка товаров -->
+            <!-- Сетка товаров (динамически рендерится через JavaScript) -->
             <div class="products-grid" id="productsContainer">
-                
-                <!-- Товар 1: Хомуты для катамарана (с реальными фото) -->
-                <article class="product-card" data-product-id="1">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии (100 шт)</span>
-                        <span class="photo-count">📷 3 фото</span>
-                        <div class="hover-carousel" data-current="0">
-                            <img src="./static/uploads/60VcwPMw5UK0Cdc8Q1TrJMOWsdgAmOfofbTLGRi55Ej5QYmYVY-6P9dXy1MMJEKxBkXDhCkb1uTeocrBShiX2HsK_1786176622.jpg" 
-                                 alt="Хомуты для катамарана 40 мм" class="carousel-slide active" loading="lazy">
-                            <img src="./static/uploads/ejQHQi5TGrWo4Qo-0WbaFD_ozxOPDUJzEJ3PWVMFAp1ZlCjwTMNWIZtkODXVlgMSDBj1uSL1LhYyT41jlp7QDiWp_1786176622.jpg" 
-                                 alt="Хомуты для катамарана" class="carousel-slide" loading="lazy">
-                            <img src="./static/uploads/gvSbNk3LiJwOUFXvZZsVHOZmvT-9HWb2_uP1CUN2hDtbYaomIxewjElZ6QPFuf5vASvDyWHWdogt0HqRnQPjzCFJ_1786176622.jpg" 
-                                 alt="Хомуты для рамы катамарана" class="carousel-slide" loading="lazy">
-                            <div class="carousel-dots">
-                                <span class="dot active"></span>
-                                <span class="dot"></span>
-                                <span class="dot"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Сплавы и водный туризм</div>
-                        <h3 class="product-name">Хомуты для катамарана (40 мм)</h3>
-                        <p class="product-description">
-                            Хомуты для трубы рамы диаметром 40 мм. На сплавах часто теряются. В наличии поштучно и комплектом...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">450 <span class="currency">₽ / шт</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(1, 'Хомуты для катамарана (40 мм)', 450)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 2: Рюкзак 65L -->
-                <article class="product-card" data-product-id="2">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🎒</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">Экспедиционный рюкзак</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Снаряжение</div>
-                        <h3 class="product-name">Рюкзак туристический 65L 'Nordic'</h3>
-                        <p class="product-description">
-                            Прочный рюкзак ripstop 420D с анатомической системой вентиляции спины и поясом с карманами...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">5 490 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(2, 'Рюкзак туристический 65L Nordic', 5490)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 3: Палатка -->
-                <article class="product-card" data-product-id="3">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🏕️</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">Всесезонная палатка</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Лагерь</div>
-                        <h3 class="product-name">Палатка 3-местная 'Эверест Pro'</h3>
-                        <p class="product-description">
-                            Всесезонная палатка с двойным тентом, дюралюминиевым каркасом и ветроустойчивой конструкцией...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">12 990 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(3, 'Палатка 3-местная Эверест Pro', 12990)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 4: Спальник -->
-                <article class="product-card" data-product-id="4">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge out-of-stock">Под заказ</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🛏️</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">Зимний спальник</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Снаряжение</div>
-                        <h3 class="product-name">Спальник -15°C 'Арктика'</h3>
-                        <p class="product-description">
-                            Тёплый анатомический спальник для походов. Утеплитель Hollow Fiber, компрессионный чехол...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">4 890 <span class="currency">₽</span></span>
-                            <button class="btn btn-outline btn-reserve" onclick="event.stopPropagation(); openReserveModal(4, 'Спальник -15°C Арктика', 4890)">
-                                📌 Уточнить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 5: Фонарь -->
-                <article class="product-card" data-product-id="5">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🔦</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">LED 500 лм + PowerBank</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Освещение</div>
-                        <h3 class="product-name">Фонарь кемпинговый LED 500лм</h3>
-                        <p class="product-description">
-                            Светодиодный фонарь с плавной регулировкой яркости, powerbank-функцией 10000 mAh и защитой IPX6...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">2 490 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(5, 'Фонарь кемпинговый LED 500лм', 2490)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 6: Компас -->
-                <article class="product-card" data-product-id="6">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🧭</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">Жидкостный компас</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Навигация</div>
-                        <h3 class="product-name">Компас жидкостный 'Турист Pro'</h3>
-                        <p class="product-description">
-                            Точный туристический компас с линейкой, увеличительным стеклом и люминесцентной ночной шкалой...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">1 490 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(6, 'Компас жидкостный Турист Pro', 1490)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 7: Горелка -->
-                <article class="product-card" data-product-id="7">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">В наличии</span>
-                        <div class="product-image-placeholder">
-                            <span style="font-size: 3.5rem;">🔥</span>
-                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:6px;">Газовая горелка 2800W</p>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Кухня</div>
-                        <h3 class="product-name">Горелка газовая 'Следопыт'</h3>
-                        <p class="product-description">
-                            Компактная горелка мощностью 2800 Вт со складной конструкцией, пьезоподжигом и защитой от ветра...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">1 890 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(7, 'Горелка газовая Следопыт', 1890)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Товар 8: Талисман команды 'Слон' (с реальным фото) -->
-                <article class="product-card" data-product-id="8">
-                    <div class="product-image-wrapper">
-                        <span class="product-badge in-stock">1 шт</span>
-                        <span class="photo-count">📷 Фото</span>
-                        <img src="./static/uploads/1393333403_1737806842_1786180842.jpg" 
-                             alt="Талисман команды Слон" class="carousel-slide active" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
-                    </div>
-                    <div class="product-info">
-                        <div class="product-category">Сувениры & Талисманы</div>
-                        <h3 class="product-name">Талисман команды 'Слон Маркус'</h3>
-                        <p class="product-description">
-                            Легендарный талисман для сплавов и походов. Приносит удачу на порогах и сухую погоду...
-                        </p>
-                        <div class="product-footer">
-                            <span class="product-price">990 <span class="currency">₽</span></span>
-                            <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal(8, 'Талисман команды Слон Маркус', 990)">
-                                📌 Отложить
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
             </div>
         </section>
     </main>
 
-    <!-- МОДАЛКА: Карточка товара -->
+    <!-- МОДАЛКА 1: ВХОД В АДМИНКУ ПО ПАРОЛЮ -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-overlay" onclick="closeAdminLoginModal()"></div>
+        <div class="modal-content" style="max-width: 420px;">
+            <button class="modal-close" onclick="closeAdminLoginModal()">&times;</button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">🔐</div>
+                <h2 style="font-size: 1.5rem; margin-bottom: 4px;">Вход в админ-панель</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Доступ к управлению заказами и складом
+                </p>
+            </div>
+
+            <div id="adminLoginError" style="display:none; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger); padding:10px 14px; border-radius:8px; font-size:0.85rem; margin-bottom:16px;">
+            </div>
+
+            <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="adminLoginUsername">Логин</label>
+                    <input type="text" id="adminLoginUsername" required class="form-input" value="admin" placeholder="admin">
+                </div>
+                <div class="form-group">
+                    <label for="adminLoginPassword">Пароль администратора</label>
+                    <input type="password" id="adminLoginPassword" required class="form-input" placeholder="••••••••">
+                </div>
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:10px 12px; border-radius:8px; font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">
+                    💡 Пароль по умолчанию: <strong style="color:var(--accent);">markus2026</strong> (логин: admin)
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">🔓 Войти в систему</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА 2: ПОЛНОЦЕННЫЙ ДАШБОРД АДМИНИСТРАТОРА (ЗАКАЗЫ И СКЛАД) -->
+    <div id="adminModal" class="modal">
+        <div class="modal-overlay" onclick="closeAdminModal()"></div>
+        <div class="modal-content" style="max-width: 960px; width: 95%;">
+            <button class="modal-close" onclick="closeAdminModal()">&times;</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.6rem;">⚙️ Панель администратора</h2>
+                    <span style="color:var(--success); font-size:0.85rem;">● Сессия активна (admin)</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.85rem; border-color:var(--danger); color:var(--danger);" onclick="adminLogout()">
+                        🚪 Выйти
+                    </button>
+                </div>
+            </div>
+
+            <!-- Навигация по табам админки -->
+            <div class="admin-tabs-nav">
+                <button class="admin-tab-btn active" id="btn-tab-admin-orders" onclick="switchAdminTab('tab-admin-orders')">
+                    📋 Заказы клиентов (<span id="adminOrdersTabCount">0</span>)
+                </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-products" onclick="switchAdminTab('tab-admin-products')">
+                    🛍️ Управление складом и товарами
+                </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-security" onclick="switchAdminTab('tab-admin-security')">
+                    🛡️ Безопасность
+                </button>
+            </div>
+
+            <!-- Таб 1: Заказы -->
+            <div id="tab-admin-orders" class="admin-tab-pane">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
+                    <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">
+                        Кликните на статус (🔴 Новый / 🟠 В работе / 🟢 Выполнен) для его быстрого переключения.
+                    </p>
+                    <button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;" onclick="clearAllOrders()">
+                        🗑️ Очистить список
+                    </button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Номер</th>
+                                <th>Товар</th>
+                                <th>Покупатель / Контакты</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                                <th>Удалить</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="adminEmptyOrders" style="display:none; text-align: center; padding: 40px 0; color: var(--text-muted);">
+                    <div style="font-size: 2.5rem; margin-bottom: 8px;">📭</div>
+                    <p>Заявок пока нет. Клиенты могут бронировать товары на сайте!</p>
+                </div>
+            </div>
+
+            <!-- Таб 2: Склад и товары -->
+            <div id="tab-admin-products" class="admin-tab-pane" style="display:none;">
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">
+                    Изменяйте остатки и статус доступности товаров в один клик. Изменения мгновенно отображаются на витрине.
+                </p>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Цена</th>
+                                <th>Остаток на складе</th>
+                                <th>Статус на витрине</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Таб 3: Безопасность -->
+            <div id="tab-admin-security" class="admin-tab-pane" style="display:none;">
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:20px; border-radius:12px; margin-top:10px;">
+                    <h3 style="margin-top:0;">🛡️ Статус защиты магазина</h3>
+                    <ul style="color:var(--text-secondary); line-height:1.8; font-size:0.9rem; padding-left:20px;">
+                        <li>Защита от подбора паролей (брутфорса): <strong>Активна (лимит: 3 попытки)</strong></li>
+                        <li>Шифрование сессии: <strong>SHA-256 / Werkzeug Security</strong></li>
+                        <li>Текущий логин: <code>admin</code></li>
+                        <li>Пароль: <code>markus2026</code> (можно изменить в .env на сервере)</li>
+                        <li>Уведомления на почту: <strong>info@markus-mart.ru</strong> (SMTP SSL 465)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:10px; font-size: 0.8rem; color: var(--text-muted);">
+                <div>📍 Версия магазина: <strong>Markus-Mart v2.0 (Outdoor Lost & Found Edition)</strong></div>
+                <div>🔒 Защищено паролем</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Карточка товара (Детальный просмотр + Галерея) -->
     <div id="productCardModal" class="modal">
         <div class="modal-overlay" onclick="closeProductCard()"></div>
         <div class="modal-content product-card-modal">
@@ -431,12 +415,12 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА: Отложить (Бронирование) -->
+    <!-- МОДАЛКА: Отложить (Форма бронирования для туриста) -->
     <div id="reserveModal" class="modal">
         <div class="modal-overlay" onclick="closeReserveModal()"></div>
         <div class="modal-content">
             <button class="modal-close" onclick="closeReserveModal()">&times;</button>
-            <h3>📌 Бронирование товара</h3>
+            <h3>📌 Бронирование расходников</h3>
             <div class="modal-product-info">
                 <p id="modalProductName" class="modal-product-name"></p>
                 <p id="modalProductPrice" class="modal-product-price"></p>
@@ -447,8 +431,8 @@
             </div>
             <form id="reserveForm" onsubmit="handleReserveSubmit(event)">
                 <div class="form-group">
-                    <label for="customer_name">Ваше имя *</label>
-                    <input type="text" id="customer_name" required class="form-input" placeholder="Дмитрий">
+                    <label for="customer_name">Ваше имя или название турклуба *</label>
+                    <input type="text" id="customer_name" required class="form-input" placeholder="Дмитрий (Клуб Сплав)">
                 </div>
                 <div class="form-group">
                     <label for="customer_phone">Телефон для связи *</label>
@@ -459,12 +443,12 @@
                     <input type="email" id="customer_email" class="form-input" placeholder="turist@example.ru">
                 </div>
                 <div class="form-group">
-                    <label for="note">Комментарий / количество</label>
-                    <textarea id="note" rows="2" class="form-input" placeholder="Количество хомутов, удобное время звонка..."></textarea>
+                    <label for="note">Комментарий / количество / дата старта сплава</label>
+                    <textarea id="note" rows="2" class="form-input" placeholder="Нужно 4 хомута 40 мм, выезжаем в пятницу..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">✅ Подтвердить бронь</button>
+                <button type="submit" class="btn btn-primary btn-full">✅ Забронировать</button>
                 <p class="form-hint" style="text-align:center; margin-top:10px; color:var(--text-muted); font-size:0.8rem;">
-                    Заявка сохраняется в системе и передаётся администратору
+                    Заявка мгновенно поступит в админку продавца
                 </p>
             </form>
         </div>
@@ -479,58 +463,14 @@
                 <div class="order-success-icon">🎉</div>
                 <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Заявка принята!</h3>
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Товар забронирован за вами. Мы свяжемся с вами по указанному телефону для подтверждения.
+                    Расходники забронированы. Продавец свяжется с вами по указанному телефону для подтверждения заказа.
                 </p>
                 <div class="order-id-badge" id="successOrderId">MM-0000</div>
                 <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: left; font-size: 0.85rem; margin-bottom: 16px;">
                     <div>Товар: <strong id="successProductName" style="color: var(--text-primary);">—</strong></div>
                     <div style="margin-top: 4px;">Телефон: <strong id="successCustomerPhone" style="color: var(--text-primary);">—</strong></div>
                 </div>
-                <button class="btn btn-primary btn-full" onclick="closeSuccessModal()">Понятно, спасибо!</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛКА: Панель заказов / Демо Админка -->
-    <div id="adminModal" class="modal">
-        <div class="modal-overlay" onclick="closeAdminModal()"></div>
-        <div class="modal-content" style="max-width: 800px; width: 95%;">
-            <button class="modal-close" onclick="closeAdminModal()">&times;</button>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
-                <h3 style="margin: 0;">⚙️ Панель управления заказами</h3>
-                <button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="clearAllOrders()">
-                    🗑️ Очистить список
-                </button>
-            </div>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px;">
-                Здесь отображаются все заявки и бронирования, оформленные в магазине через браузер.
-            </p>
-
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Номер</th>
-                            <th>Товар</th>
-                            <th>Покупатель</th>
-                            <th>Дата</th>
-                            <th>Статус</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminOrdersTableBody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="adminEmptyOrders" style="display:none; text-align: center; padding: 40px 0; color: var(--text-muted);">
-                <div style="font-size: 2.5rem; margin-bottom: 8px;">📭</div>
-                <p>Заявок пока нет. Оформите тестовое бронирование в каталоге!</p>
-            </div>
-
-            <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:10px; font-size: 0.8rem; color: var(--text-muted);">
-                <div>🛡️ Защита от брутфорса: <strong>Включена</strong> (Лимит: 3 попытки)</div>
-                <div>📍 Версия: <strong>Dark Outdoor v1.2 (GitHub Pages)</strong></div>
+                <button class="btn btn-primary btn-full" onclick="closeSuccessModal()">Отлично, спасибо!</button>
             </div>
         </div>
     </div>
@@ -539,7 +479,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-brand">Маркус-март</div>
-            <p>Аксессуары и снаряжение для туристического бизнеса © 2026</p>
+            <p>То, что вечно теряется на сплавах и стоянках © 2026</p>
             <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">
                 Исходный код на <a href="https://github.com/DranKell/markus-mart" target="_blank" style="color: var(--accent); text-decoration: none;">GitHub</a>
             </p>

@@ -6,50 +6,165 @@
 <section class="admin-section container">
     <div class="admin-header">
         <div>
-            <h1>⚙️ Админ-панель</h1>
+            <h1>⚙️ Панель администратора</h1>
             {% if new_count > 0 %}
                 <span class="new-orders-badge">🔔 {{ new_count }} новых заявок</span>
             {% endif %}
         </div>
-        <a href="{{ url_for('index') }}" class="btn btn-outline">← На сайт</a>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="{{ url_for('index') }}" class="btn btn-outline">← На сайт</a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);">🚪 Выйти</a>
+        </div>
     </div>
 
     <!-- ═══ ТАБЫ ═══ -->
     <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab('tab-products')" id="btn-tab-products">
+        <button class="admin-tab active" onclick="switchTab('tab-orders')" id="btn-tab-orders">
+            📋 Заказы и заявки ({{ reservations|length }}) {% if new_count > 0 %}<span style="background:var(--accent); color:#fff; border-radius:999px; padding:2px 7px; font-size:0.75rem; margin-left:4px;">{{ new_count }}</span>{% endif %}
+        </button>
+        <button class="admin-tab" onclick="switchTab('tab-products')" id="btn-tab-products">
             🛍️ Товары и склад ({{ products|length }})
         </button>
         <button class="admin-tab" onclick="switchTab('tab-seller')" id="btn-tab-seller">
-            🔧 Данные продавца
+            🔧 Настройки и безопасность
         </button>
     </div>
 
-    <!-- ═══ ТАБ 1: Товары и склад ═══ -->
-    <div id="tab-products" class="tab-panel active">
+    <!-- ═══ ТАБ 1: Заказы и заявки ═══ -->
+    <div id="tab-orders" class="tab-panel active">
+        <!-- Таблица всех заявок -->
+        <div class="admin-card">
+            <h2>📋 Входящие заявки от туристов ({{ reservations|length }})</h2>
+            <p class="text-muted" style="margin-bottom: 16px; font-size: 0.9rem;">
+                Здесь отображаются все оформленные клиентами бронирования товаров и контактные данные.
+            </p>
+            {% if reservations %}
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Товар</th>
+                                <th>Клиент</th>
+                                <th>Телефон</th>
+                                <th>Email</th>
+                                <th>Примечание туриста</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in reservations %}
+                            <tr class="{% if r.is_new %}reservation-new{% endif %}">
+                                <td>
+                                    {% if r.is_new %}
+                                        <span class="new-badge" style="background:var(--accent); color:#fff; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">🔴 НОВЫЙ</span>
+                                    {% else %}
+                                        <span class="read-badge" style="background:rgba(34,197,94,0.15); color:var(--success); padding:4px 8px; border-radius:6px; font-size:0.75rem;">✓ Обработан</span>
+                                    {% endif %}
+                                </td>
+                                <td class="td-date">{{ r.created_at[:16].replace("T", " ") }}</td>
+                                <td>
+                                    <strong>{{ r.product_name }}</strong>
+                                    <p class="table-desc">{{ "{:,.0f}".format(r.price).replace(",", " ") }} ₽</p>
+                                </td>
+                                <td><strong>{{ r.customer_name }}</strong></td>
+                                <td><a href="tel:{{ r.customer_phone }}" class="phone-link" style="color:var(--accent); font-weight:600;">{{ r.customer_phone }}</a></td>
+                                <td>
+                                    {% if r.customer_email %}
+                                        <a href="mailto:{{ r.customer_email }}" class="email-link">{{ r.customer_email }}</a>
+                                    {% else %}<span class="text-muted">—</span>{% endif %}
+                                </td>
+                                <td class="td-note" style="max-width:260px;">{{ r.note or "—" }}</td>
+                                <td class="td-actions" style="white-space:nowrap;">
+                                    {% if r.is_new %}
+                                        <form method="POST" action="{{ url_for('admin_read_reservation', reservation_id=r.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:var(--accent); border:1px solid rgba(245,158,11,0.3); padding:4px 8px;" title="Отметить прочитанным">✓</button>
+                                        </form>
+                                    {% endif %}
+                                    <form method="POST" action="{{ url_for('admin_delete_reservation', reservation_id=r.id) }}"
+                                          onsubmit="return confirm('Удалить эту заявку?');" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" style="padding:4px 8px;" title="Удалить заявку">🗑</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-text">Заявок пока нет. Клиенты ещё не оформили бронирование.</p>
+            {% endif %}
+        </div>
 
+        <!-- Очередь заказов по товарам -->
+        {% if queue_data %}
+        <div class="admin-card">
+            <h2>🚦 Очередь бронирования по товарам</h2>
+            {% for product_id, queue in queue_data.items() %}
+                {% set product = products | selectattr('id', 'equalto', product_id) | first %}
+                <div class="queue-block" style="margin-bottom: 20px; background:var(--bg-secondary); padding:16px; border-radius:12px; border:1px solid var(--border);">
+                    <div class="queue-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <strong>{{ product.name if product else 'Товар #' + product_id|string }}</strong>
+                        <span class="queue-count" style="background:var(--accent-glow); color:var(--accent); padding:4px 10px; border-radius:999px; font-weight:700; font-size:0.8rem;">
+                            {{ queue|length }} в очереди
+                        </span>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table queue-table">
+                            <thead>
+                                <tr>
+                                    <th># Позиция</th>
+                                    <th>Дата</th>
+                                    <th>Клиент</th>
+                                    <th>Телефон</th>
+                                    <th>Примечание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in queue %}
+                                <tr>
+                                    <td class="queue-num" style="font-weight:700; color:var(--accent);">№{{ order.actual_position }}</td>
+                                    <td class="td-date">{{ order.created_at[:16].replace("T", " ") }}</td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td><a href="tel:{{ order.customer_phone }}" class="phone-link">{{ order.customer_phone }}</a></td>
+                                    <td class="td-note">{{ order.note or "—" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ═══ ТАБ 2: Товары и склад ═══ -->
+    <div id="tab-products" class="tab-panel">
         <!-- Добавление товара -->
         <div class="admin-card">
-            <h2>➕ Добавить товар</h2>
+            <h2>➕ Добавить новый товар в каталог</h2>
             <form method="POST" action="{{ url_for('admin_add') }}" enctype="multipart/form-data" class="admin-form">
                 <div class="form-row">
                     <div class="form-group form-group-half">
-                        <label for="name">Название *</label>
-                        <input type="text" id="name" name="name" required class="form-input" placeholder="Например: Рюкзак туристический 45L">
+                        <label for="name">Название товара *</label>
+                        <input type="text" id="name" name="name" required class="form-input" placeholder="Например: Колышки титановые 6 шт">
                     </div>
                     <div class="form-group form-group-half">
                         <label for="price">Цена (₽) *</label>
-                        <input type="number" id="price" name="price" required min="0" step="0.01" class="form-input" placeholder="2990">
+                        <input type="number" id="price" name="price" required min="0" step="0.01" class="form-input" placeholder="890">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group form-group-half">
                         <label for="stock">Количество на складе *</label>
-                        <input type="number" id="stock" name="stock" required min="0" class="form-input" placeholder="10">
+                        <input type="number" id="stock" name="stock" required min="0" class="form-input" placeholder="20">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="description">Описание</label>
-                    <textarea id="description" name="description" rows="3" class="form-input" placeholder="Подробное описание товара..."></textarea>
+                    <label for="description">Описание и характеристики</label>
+                    <textarea id="description" name="description" rows="3" class="form-input" placeholder="Размеры, диаметр, назначение, материал..."></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -65,14 +180,14 @@
                         <input type="file" id="image3" name="image3" accept="image/*" class="form-input form-file">
                     </div>
                 </div>
-                <small class="form-hint-inline" style="display:block; margin-bottom:16px;">PNG, JPG, GIF до 16 МБ каждое. Максимум 3 фотографии.</small>
-                <button type="submit" class="btn btn-primary">Добавить товар</button>
+                <small class="form-hint-inline" style="display:block; margin-bottom:16px;">PNG, JPG, WEBP до 16 МБ. До 3 фото на товар.</small>
+                <button type="submit" class="btn btn-primary">➕ Добавить товар</button>
             </form>
         </div>
 
-        <!-- Товары + Склад (единая таблица) -->
+        <!-- Таблица товаров -->
         <div class="admin-card">
-            <h2>🛍️ Товары и склад ({{ products|length }})</h2>
+            <h2>🛍️ Товары на складе ({{ products|length }})</h2>
             {% if products %}
                 <div class="admin-table-wrapper">
                     <table class="admin-table">
@@ -81,10 +196,10 @@
                                 <th>Фото</th>
                                 <th>Название</th>
                                 <th>Цена</th>
-                                <th>Склад</th>
+                                <th>Остаток</th>
                                 <th>Статус</th>
                                 <th>Фото</th>
-                                <th>Очередь</th>
+                                <th>Бронь</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
@@ -105,21 +220,21 @@
                                 <td>
                                     <strong>{{ product.name }}</strong>
                                     {% if product.description %}
-                                        <p class="table-desc">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                                        <p class="table-desc">{{ product.description[:90] }}{% if product.description|length > 90 %}...{% endif %}</p>
                                     {% endif %}
                                 </td>
                                 <td class="td-price">{{ "{:,.0f}".format(product.price).replace(",", " ") }} ₽</td>
                                 <td>
                                     <form method="POST" action="{{ url_for('admin_update_stock', product_id=product.id) }}" style="display:flex; gap:6px; align-items:center;">
-                                        <input type="number" name="stock" value="{{ product.stock }}" min="0" style="width:60px; padding:6px 8px; text-align:center;">
-                                        <button type="submit" class="btn btn-sm" style="padding:6px 10px; background:var(--accent); color:#fff; font-size:0.75rem;">💾</button>
+                                        <input type="number" name="stock" value="{{ product.stock }}" min="0" style="width:60px; padding:6px 8px; text-align:center;" class="form-input">
+                                        <button type="submit" class="btn btn-sm" style="padding:6px 10px; background:var(--accent); color:#fff; font-size:0.75rem;" title="Сохранить остаток">💾</button>
                                     </form>
                                 </td>
                                 <td>
                                     {% if product.stock > 0 %}
-                                        <span class="stock-badge in-stock">✅ В наличии</span>
+                                        <span class="stock-badge in-stock" style="color:var(--success);">✅ В наличии</span>
                                     {% else %}
-                                        <span class="stock-badge out-of-stock">❌ Нет</span>
+                                        <span class="stock-badge out-of-stock" style="color:var(--text-muted);">❌ Под заказ</span>
                                     {% endif %}
                                 </td>
                                 <td><span class="photo-badge">{{ img_count }} 📷</span></td>
@@ -135,7 +250,7 @@
                                         ✏️ Редакт.
                                     </button>
                                     <form method="POST" action="{{ url_for('admin_delete', product_id=product.id) }}"
-                                          onsubmit="return confirm('Удалить товар &quot;{{ product.name }}&quot; и все бронирования?');" style="display:inline;">
+                                          onsubmit="return confirm('Удалить товар &quot;{{ product.name }}&quot; и все связанные бронирования?');" style="display:inline;">
                                         <button type="submit" class="btn btn-danger btn-sm">🗑</button>
                                     </form>
                                 </td>
@@ -145,219 +260,120 @@
                     </table>
                 </div>
             {% else %}
-                <p class="empty-text">Пока нет товаров. Добавьте первый выше ↑</p>
+                <p class="empty-text">Пока нет товаров. Добавьте первый товар выше ↑</p>
             {% endif %}
         </div>
     </div>
 
-    <!-- ═══ ТАБ 2: Данные продавца ═══ -->
+    <!-- ═══ ТАБ 3: Настройки и безопасность ═══ -->
     <div id="tab-seller" class="tab-panel">
         <div class="admin-card">
-            <h2>🔧 Данные продавца (настройки .env)</h2>
+            <h2>🔧 Настройки магазина (.env)</h2>
             <form method="POST" action="{{ url_for('admin_settings') }}" class="admin-form">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Логин админа</label>
+                    <div class="form-group form-group-half">
+                        <label>Логин администратора</label>
                         <input type="text" name="admin_username" class="form-input" value="{{ settings.admin_username }}" required>
                     </div>
-                    <div class="form-group">
-                        <label>Пароль админа <small class="text-muted">(оставь пустым — не менять)</small></label>
+                    <div class="form-group form-group-half">
+                        <label>Новый пароль админа <small class="text-muted">(оставьте пустым, чтобы не менять)</small></label>
                         <input type="password" name="admin_password" class="form-input" placeholder="••••••••">
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>SMTP сервер</label>
+                    <div class="form-group form-group-half">
+                        <label>SMTP сервер почты</label>
                         <input type="text" name="smtp_server" class="form-input" value="{{ settings.smtp_server }}" placeholder="smtp.yandex.ru">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group form-group-half">
                         <label>SMTP порт</label>
                         <input type="text" name="smtp_port" class="form-input" value="{{ settings.smtp_port }}" placeholder="465">
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>SMTP логин (email отправителя)</label>
+                    <div class="form-group form-group-half">
+                        <label>Email отправителя (SMTP логин)</label>
                         <input type="text" name="smtp_user" class="form-input" value="{{ settings.smtp_user }}" placeholder="info@markus-mart.ru">
                     </div>
-                    <div class="form-group">
-                        <label>SMTP пароль <small class="text-muted">(оставь пустым — не менять)</small></label>
+                    <div class="form-group form-group-half">
+                        <label>Пароль приложения SMTP</label>
                         <input type="password" name="smtp_password" class="form-input" placeholder="••••••••">
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Email получателя (куда приходят заявки)</label>
+                    <div class="form-group form-group-half">
+                        <label>Email для получения уведомлений о заказах</label>
                         <input type="email" name="admin_email" class="form-input" value="{{ settings.admin_email }}" placeholder="admin@markus-mart.ru">
                     </div>
-                    <div class="form-group">
-                        <label>SECRET_KEY <small class="text-muted">(оставь пустым — не менять)</small></label>
-                        <input type="text" name="secret_key" class="form-input" value="{{ settings.secret_key }}" placeholder="markus-mart-secret-key-change-me">
+                    <div class="form-group form-group-half">
+                        <label>Секретный ключ (SECRET_KEY)</label>
+                        <input type="text" name="secret_key" class="form-input" value="{{ settings.secret_key }}" placeholder="markus-mart-secret-key">
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary">💾 Сохранить настройки в .env</button>
             </form>
         </div>
-    </div>
 
-    <!-- ОЧЕРЕДЬ ЗАКАЗОВ -->
-    <div class="admin-card">
-        <h2>🚦 Очередь заказов по товарам</h2>
-        {% if queue_data %}
-            {% for product_id, queue in queue_data.items() %}
-                {% set product = products | selectattr('id', 'equalto', product_id) | first %}
-                <div class="queue-block">
-                    <div class="queue-header">
-                        <strong>{{ product.name if product else 'Товар #' + product_id|string }}</strong>
-                        <span class="queue-count">{{ queue|length }} в очереди</span>
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table queue-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Дата</th>
-                                    <th>Клиент</th>
-                                    <th>Телефон</th>
-                                    <th>Примечание</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in queue %}
-                                <tr class="{% if order.is_new %}reservation-new{% endif %}">
-                                    <td class="queue-num">{{ order.actual_position }}</td>
-                                    <td class="td-date">{{ order.created_at[:16].replace("T", " ") }}</td>
-                                    <td>{{ order.customer_name }}</td>
-                                    <td><a href="tel:{{ order.customer_phone }}" class="phone-link">{{ order.customer_phone }}</a></td>
-                                    <td class="td-note">{{ order.note or "—" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty-text">Пока нет заказов в очереди.</p>
-        {% endif %}
-    </div>
-
-    <!-- ЗАЯВКИ -->
-    <div class="admin-card">
-        <h2>📋 Отложения ({{ reservations|length }}) {% if new_count > 0 %}<span class="new-count-badge">{{ new_count }} новых</span>{% endif %}</h2>
-        {% if reservations %}
-            <div class="admin-table-wrapper">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Статус</th>
-                            <th>Дата</th>
-                            <th>Товар</th>
-                            <th>Клиент</th>
-                            <th>Телефон</th>
-                            <th>Email</th>
-                            <th>Примечание</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in reservations %}
-                        <tr class="{% if r.is_new %}reservation-new{% endif %}">
-                            <td>
-                                {% if r.is_new %}
-                                    <span class="new-badge">🔴 NEW</span>
-                                {% else %}
-                                    <span class="read-badge">✓ Прочитано</span>
-                                {% endif %}
-                            </td>
-                            <td class="td-date">{{ r.created_at[:16].replace("T", " ") }}</td>
-                            <td>
-                                <strong>{{ r.product_name }}</strong>
-                                <p class="table-desc">{{ "{:,.0f}".format(r.price).replace(",", " ") }} ₽</p>
-                            </td>
-                            <td>{{ r.customer_name }}</td>
-                            <td><a href="tel:{{ r.customer_phone }}" class="phone-link">{{ r.customer_phone }}</a></td>
-                            <td>
-                                {% if r.customer_email %}
-                                    <a href="mailto:{{ r.customer_email }}" class="email-link">{{ r.customer_email }}</a>
-                                {% else %}—{% endif %}
-                            </td>
-                            <td class="td-note">{{ r.note or "—" }}</td>
-                            <td class="td-actions">
-                                {% if r.is_new %}
-                                    <form method="POST" action="{{ url_for('admin_read_reservation', reservation_id=r.id) }}">
-                                        <button type="submit" class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:var(--accent); border:1px solid rgba(245,158,11,0.3);">✓ Прочитано</button>
+        <!-- Блокировки IP -->
+        <div class="admin-card">
+            <h2>🛡️ Защита от брутфорса</h2>
+            <p class="text-muted" style="margin-bottom: 12px; font-size: 0.9rem;">
+                Лимит неверных попыток входа: 3. Автоматическая блокировка IP на 90 дней.
+            </p>
+            {% if bans %}
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>IP адрес</th>
+                                <th>Причина</th>
+                                <th>Дата блокировки</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ban in bans %}
+                            <tr>
+                                <td><code>{{ ban.ip }}</code></td>
+                                <td>{{ ban.reason }}</td>
+                                <td>{{ ban.created_at[:16] }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin_unban', ban_id=ban.id) }}">
+                                        <button type="submit" class="btn btn-outline btn-sm">Разблокировать</button>
                                     </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="empty-text">Пока нет заявок на отложение.</p>
-        {% endif %}
-    </div>
-
-    <!-- БАНЫ -->
-    <div class="admin-card">
-        <h2>🛡️ Заблокированные IP (брутфорс-защита)</h2>
-        {% if bans %}
-            <div class="admin-table-wrapper">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>IP</th>
-                            <th>Причина</th>
-                            <th>Geo</th>
-                            <th>Заблокирован до</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for ban in bans %}
-                        <tr>
-                            <td><code>{{ ban.ip }}</code></td>
-                            <td>{{ ban.reason }}</td>
-                            <td class="td-note">{{ ban.geo_info or "—" }}</td>
-                            <td class="td-date">{{ ban.banned_until[:16].replace("T", " ") }}</td>
-                            <td class="td-actions">
-                                <form method="POST" action="{{ url_for('admin_unban', ban_id=ban.id) }}">
-                                    <button type="submit" class="btn btn-sm" style="background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3);">🔓 Разблокировать</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="empty-text">Заблокированных IP пока нет. Все чисто ✨</p>
-        {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-text" style="color:var(--success);">✅ Заблокированных IP нет. Система в безопасности.</p>
+            {% endif %}
+        </div>
     </div>
 </section>
 
-<!-- МОДАЛКИ РЕДАКТИРОВАНИЯ -->
+<!-- МОДАЛКИ РЕДАКТИРОВАНИЯ ТОВАРОВ -->
 {% for product in products %}
-<div class="modal" id="editModal{{ product.id }}">
+<div id="editModal{{ product.id }}" class="modal">
     <div class="modal-overlay" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';"></div>
-    <div class="modal-content" style="max-width:560px;">
+    <div class="modal-content" style="max-width:600px;">
         <button class="modal-close" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';">&times;</button>
-        <h3>✏️ Редактировать: {{ product.name }}</h3>
-        <form method="POST" action="{{ url_for('admin_edit', product_id=product.id) }}" enctype="multipart/form-data">
+        <h3>✏️ Редактирование: {{ product.name }}</h3>
+        <form method="POST" action="{{ url_for('admin_edit', product_id=product.id) }}" enctype="multipart/form-data" class="admin-form" style="margin-top:16px;">
             <div class="form-row">
                 <div class="form-group" style="flex:2;">
-                    <label>Название *</label>
+                    <label>Название товара *</label>
                     <input type="text" name="name" class="form-input" value="{{ product.name }}" required>
                 </div>
                 <div class="form-group" style="flex:1;">
-                    <label>Цена *</label>
+                    <label>Цена (₽) *</label>
                     <input type="number" name="price" class="form-input" value="{{ product.price }}" required min="0" step="0.01">
                 </div>
             </div>
             <div class="form-group">
-                <label>Склад, шт.</label>
+                <label>Остаток на складе, шт.</label>
                 <input type="number" name="stock" class="form-input" value="{{ product.stock }}" min="0">
             </div>
             <div class="form-group">
@@ -400,8 +416,10 @@
 function switchTab(tabId) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    document.getElementById('btn-' + tabId).classList.add('active');
+    const panel = document.getElementById(tabId);
+    const btn = document.getElementById('btn-' + tabId);
+    if (panel) panel.classList.add('active');
+    if (btn) btn.classList.add('active');
 }
 </script>
 {% endblock %}
