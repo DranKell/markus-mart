@@ -429,16 +429,33 @@ function clearAllOrders() {
     }
 }
 
-// ─── Управление товарами в админке ───
+// ─── Управление товарами в админке (CRUD: Редактирование, Добавление, Удаление) ───
 function renderAdminProducts() {
     const prods = getProducts();
     const tbody = document.getElementById('adminProductsTableBody');
     if (!tbody) return;
 
-    tbody.innerHTML = Object.values(prods).map(p => `
+    tbody.innerHTML = Object.values(prods).map(p => {
+        const iconOrPhoto = (p.images && p.images.length > 0)
+            ? `<img src="${p.images[0]}" style="width:38px; height:38px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" alt="">`
+            : `<span style="font-size:1.6rem;">${p.icon || '⛺'}</span>`;
+
+        let categoryName = 'Сплавы';
+        if (p.category === 'tent') categoryName = 'Палатки';
+        else if (p.category === 'hardware') categoryName = 'Фурнитура';
+        else if (p.category === 'souvenirs') categoryName = 'Сувениры';
+
+        return `
         <tr>
-            <td style="font-weight:700; color:var(--text-primary);">${p.name}</td>
-            <td style="color:var(--accent); font-weight:600;">${p.price.toLocaleString('ru-RU')} ₽</td>
+            <td style="text-align:center; width:50px;">${iconOrPhoto}</td>
+            <td style="font-weight:700; color:var(--text-primary);">
+                <div style="font-size:0.95rem;">${p.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:normal; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    ${p.description}
+                </div>
+            </td>
+            <td style="font-size:0.82rem; color:var(--text-secondary);">${categoryName}</td>
+            <td style="color:var(--accent); font-weight:700; white-space:nowrap;">${p.price.toLocaleString('ru-RU')} ₽</td>
             <td>
                 <div style="display:flex; align-items:center; gap:6px;">
                     <button class="btn btn-outline" style="padding:2px 8px; font-size:0.8rem;" onclick="changeProductStock(${p.id}, -1)">-</button>
@@ -448,12 +465,147 @@ function renderAdminProducts() {
             </td>
             <td>
                 <span class="badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}" 
-                      style="cursor:pointer;" onclick="toggleProductStockStatus(${p.id})">
+                      style="cursor:pointer;" onclick="toggleProductStockStatus(${p.id})" title="Кликните для переключения статуса">
                     ${p.stock > 0 ? '✅ В наличии' : '❌ Под заказ'}
                 </span>
             </td>
+            <td style="text-align:right; white-space:nowrap;">
+                <button class="btn btn-primary" style="padding:4px 10px; font-size:0.78rem; margin-right:4px;" onclick="openEditProductModal(${p.id})" title="Редактировать товар">
+                    ✏️ Изменить
+                </button>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:0.78rem; border-color:var(--danger); color:var(--danger);" onclick="deleteAdminProduct(${p.id})" title="Удалить товар">
+                    🗑️
+                </button>
+            </td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function openAddProductModal() {
+    document.getElementById('productEditModalTitle').textContent = "➕ Добавление нового товара";
+    document.getElementById('editProductId').value = "";
+    document.getElementById('editProductName').value = "";
+    document.getElementById('editProductPrice').value = "";
+    document.getElementById('editProductStock').value = "10";
+    document.getElementById('editProductCategory').value = "rafting";
+    document.getElementById('editProductIcon').value = "🛶";
+    document.getElementById('editProductBadge').value = "Новинка";
+    document.getElementById('editProductDescription').value = "";
+    document.getElementById('editProductImages').value = "";
+
+    const modal = document.getElementById('productEditModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function openEditProductModal(pid) {
+    const prods = getProducts();
+    const p = prods[pid];
+    if (!p) return;
+
+    document.getElementById('productEditModalTitle').textContent = `✏️ Редактирование: ${p.name}`;
+    document.getElementById('editProductId').value = p.id;
+    document.getElementById('editProductName').value = p.name;
+    document.getElementById('editProductPrice').value = p.price;
+    document.getElementById('editProductStock').value = p.stock;
+    document.getElementById('editProductCategory').value = p.category || 'rafting';
+    document.getElementById('editProductIcon').value = p.icon || '⛺';
+    document.getElementById('editProductBadge').value = p.badge || '';
+    document.getElementById('editProductDescription').value = p.description || '';
+    document.getElementById('editProductImages').value = (p.images || []).join(', ');
+
+    const modal = document.getElementById('productEditModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeProductEditModal() {
+    const modal = document.getElementById('productEditModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function handleProductEditSubmit(e) {
+    e.preventDefault();
+    const prods = getProducts();
+    const idVal = document.getElementById('editProductId').value;
+    const name = document.getElementById('editProductName').value.trim();
+    const price = parseFloat(document.getElementById('editProductPrice').value) || 0;
+    const stock = parseInt(document.getElementById('editProductStock').value, 10) || 0;
+    const category = document.getElementById('editProductCategory').value;
+    const icon = document.getElementById('editProductIcon').value.trim() || '⛺';
+    const badge = document.getElementById('editProductBadge').value.trim();
+    const description = document.getElementById('editProductDescription').value.trim();
+    const imagesRaw = document.getElementById('editProductImages').value.trim();
+    
+    let images = [];
+    if (imagesRaw) {
+        images = imagesRaw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    if (!name || isNaN(price)) {
+        alert('Пожалуйста, заполните наименование и корректную цену!');
+        return;
+    }
+
+    if (idVal) {
+        // Редактирование существующего
+        const pid = parseInt(idVal, 10);
+        if (prods[pid]) {
+            prods[pid].name = name;
+            prods[pid].price = price;
+            prods[pid].priceText = `${price.toLocaleString('ru-RU')} ₽`;
+            prods[pid].stock = stock;
+            prods[pid].category = category;
+            prods[pid].icon = icon;
+            prods[pid].badge = badge;
+            prods[pid].description = description;
+            if (images.length > 0 || imagesRaw === '') {
+                prods[pid].images = images;
+            }
+        }
+    } else {
+        // Добавление нового товара
+        const maxId = Math.max(0, ...Object.keys(prods).map(Number));
+        const newId = maxId + 1;
+        prods[newId] = {
+            id: newId,
+            name: name,
+            category: category,
+            icon: icon,
+            price: price,
+            priceText: `${price.toLocaleString('ru-RU')} ₽`,
+            stock: stock,
+            badge: badge || 'Новинка',
+            description: description,
+            images: images
+        };
+    }
+
+    saveProducts(prods);
+    productsData = prods;
+    renderAdminProducts();
+    renderPublicCatalog();
+    closeProductEditModal();
+}
+
+function deleteAdminProduct(pid) {
+    const prods = getProducts();
+    const p = prods[pid];
+    if (!p) return;
+
+    if (confirm(`Удалить товар «${p.name}» с витрины и склада?`)) {
+        delete prods[pid];
+        saveProducts(prods);
+        productsData = prods;
+        renderAdminProducts();
+        renderPublicCatalog();
+    }
 }
 
 function changeProductStock(pid, delta) {
@@ -1001,6 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeSuccessModal();
             closeAdminModal();
             closeAdminLoginModal();
+            closeProductEditModal();
         }
     });
 
