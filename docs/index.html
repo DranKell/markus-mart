@@ -266,7 +266,7 @@
             .filter-pills {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 6px;
                 overflow-x: visible;
                 padding-bottom: 0;
             }
@@ -275,20 +275,45 @@
                 flex: 0 0 auto;
                 text-align: center;
                 line-height: 1.25;
+                padding: 7px 12px;
+                font-size: 0.8rem;
             }
             .search-box {
                 max-width: 100%;
                 min-width: 0;
+                width: 100%;
             }
             .modal-content {
-                padding: 20px 16px;
-                margin: 12px;
-                max-height: 94vh;
-                border-radius: 16px;
+                padding: 18px 12px;
+                margin: 8px;
+                max-height: 96vh;
+                border-radius: 14px;
+                width: calc(100% - 16px) !important;
+            }
+            .admin-tabs-nav {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                gap: 4px;
+                padding-bottom: 4px;
+            }
+            .admin-tab-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 8px 12px;
+                font-size: 0.82rem;
+            }
+            .admin-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 8px;
+            }
+            .admin-table {
+                min-width: 600px;
             }
             .admin-table th, .admin-table td {
                 padding: 8px 6px;
-                font-size: 0.8rem;
+                font-size: 0.78rem;
             }
         }
         @media (max-width: 480px) {
@@ -314,11 +339,16 @@
                 line-height: 1.25;
             }
             .filter-pills {
-                gap: 6px;
+                gap: 5px;
             }
             .filter-pill {
-                padding: 7px 13px;
-                font-size: 0.78rem;
+                padding: 6px 10px;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+            .search-input {
+                font-size: 0.85rem;
+                padding: 8px 14px 8px 34px;
             }
             .nav-link-admin {
                 padding: 6px 10px;
@@ -350,6 +380,17 @@
             .order-preview-box {
                 padding: 10px 12px;
                 font-size: 0.78rem;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .form-group-half {
+                flex: 1 1 100%;
+                width: 100%;
+            }
+            #adminModal .modal-content {
+                padding: 16px 10px !important;
             }
         }
         .admin-tabs-nav {
@@ -637,7 +678,7 @@
                     </button>
                 </div>
 
-                <div style="overflow-x: auto;">
+                <div class="admin-table-container">
                     <table class="admin-table">
                         <thead>
                             <tr>
