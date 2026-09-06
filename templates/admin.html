@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель — Маркус-март{% endblock %}
+
+{% block content %}
+<section class="admin-section container">
+    <div class="admin-header">
+        <div>
+            <h1>⚙️ Админ-панель</h1>
+            {% if new_count > 0 %}
+                <span class="new-orders-badge">🔔 {{ new_count }} новых заявок</span>
+            {% endif %}
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-outline">← На сайт</a>
+    </div>
+
+    <!-- ═══ ТАБЫ ═══ -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('tab-products')" id="btn-tab-products">
+            🛍️ Товары и склад ({{ products|length }})
+        </button>
+        <button class="admin-tab" onclick="switchTab('tab-seller')" id="btn-tab-seller">
+            🔧 Данные продавца
+        </button>
+    </div>
+
+    <!-- ═══ ТАБ 1: Товары и склад ═══ -->
+    <div id="tab-products" class="tab-panel active">
+
+        <!-- Добавление товара -->
+        <div class="admin-card">
+            <h2>➕ Добавить товар</h2>
+            <form method="POST" action="{{ url_for('admin_add') }}" enctype="multipart/form-data" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="name">Название *</label>
+                        <input type="text" id="name" name="name" required class="form-input" placeholder="Например: Рюкзак туристический 45L">
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="price">Цена (₽) *</label>
+                        <input type="number" id="price" name="price" required min="0" step="0.01" class="form-input" placeholder="2990">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="stock">Количество на складе *</label>
+                        <input type="number" id="stock" name="stock" required min="0" class="form-input" placeholder="10">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea id="description" name="description" rows="3" class="form-input" placeholder="Подробное описание товара..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="image">Фото 1 (главное)</label>
+                        <input type="file" id="image" name="image" accept="image/*" class="form-input form-file">
+                    </div>
+                    <div class="form-group">
+                        <label for="image2">Фото 2</label>
+                        <input type="file" id="image2" name="image2" accept="image/*" class="form-input form-file">
+                    </div>
+                    <div class="form-group">
+                        <label for="image3">Фото 3</label>
+                        <input type="file" id="image3" name="image3" accept="image/*" class="form-input form-file">
+                    </div>
+                </div>
+                <small class="form-hint-inline" style="display:block; margin-bottom:16px;">PNG, JPG, GIF до 16 МБ каждое. Максимум 3 фотографии.</small>
+                <button type="submit" class="btn btn-primary">Добавить товар</button>
+            </form>
+        </div>
+
+        <!-- Товары + Склад (единая таблица) -->
+        <div class="admin-card">
+            <h2>🛍️ Товары и склад ({{ products|length }})</h2>
+            {% if products %}
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Фото</th>
+                                <th>Название</th>
+                                <th>Цена</th>
+                                <th>Склад</th>
+                                <th>Статус</th>
+                                <th>Фото</th>
+                                <th>Очередь</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            {% set img_count = 0 %}
+                            {% if product.image_filename %}{% set img_count = img_count + 1 %}{% endif %}
+                            {% if product.image2 %}{% set img_count = img_count + 1 %}{% endif %}
+                            {% if product.image3 %}{% set img_count = img_count + 1 %}{% endif %}
+                            <tr>
+                                <td class="td-image">
+                                    {% if product.image_filename %}
+                                        <img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" alt="" class="admin-thumb">
+                                    {% else %}
+                                        <div class="admin-thumb-placeholder">🏕️</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ product.name }}</strong>
+                                    {% if product.description %}
+                                        <p class="table-desc">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                                    {% endif %}
+                                </td>
+                                <td class="td-price">{{ "{:,.0f}".format(product.price).replace(",", " ") }} ₽</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin_update_stock', product_id=product.id) }}" style="display:flex; gap:6px; align-items:center;">
+                                        <input type="number" name="stock" value="{{ product.stock }}" min="0" style="width:60px; padding:6px 8px; text-align:center;">
+                                        <button type="submit" class="btn btn-sm" style="padding:6px 10px; background:var(--accent); color:#fff; font-size:0.75rem;">💾</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    {% if product.stock > 0 %}
+                                        <span class="stock-badge in-stock">✅ В наличии</span>
+                                    {% else %}
+                                        <span class="stock-badge out-of-stock">❌ Нет</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="photo-badge">{{ img_count }} 📷</span></td>
+                                <td>
+                                    {% if queue_data.get(product.id) %}
+                                        <span class="queue-count" style="background:var(--accent-glow); color:var(--accent); padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">{{ queue_data[product.id]|length }} в очереди</span>
+                                    {% else %}
+                                        <span class="text-muted" style="font-size:0.8rem;">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="td-actions">
+                                    <button class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:var(--accent); border:1px solid rgba(245,158,11,0.3);" onclick="document.getElementById('editModal{{ product.id }}').classList.add('active'); document.body.style.overflow='hidden';">
+                                        ✏️ Редакт.
+                                    </button>
+                                    <form method="POST" action="{{ url_for('admin_delete', product_id=product.id) }}"
+                                          onsubmit="return confirm('Удалить товар &quot;{{ product.name }}&quot; и все бронирования?');" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-text">Пока нет товаров. Добавьте первый выше ↑</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ═══ ТАБ 2: Данные продавца ═══ -->
+    <div id="tab-seller" class="tab-panel">
+        <div class="admin-card">
+            <h2>🔧 Данные продавца (настройки .env)</h2>
+            <form method="POST" action="{{ url_for('admin_settings') }}" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Логин админа</label>
+                        <input type="text" name="admin_username" class="form-input" value="{{ settings.admin_username }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль админа <small class="text-muted">(оставь пустым — не менять)</small></label>
+                        <input type="password" name="admin_password" class="form-input" placeholder="••••••••">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>SMTP сервер</label>
+                        <input type="text" name="smtp_server" class="form-input" value="{{ settings.smtp_server }}" placeholder="smtp.yandex.ru">
+                    </div>
+                    <div class="form-group">
+                        <label>SMTP порт</label>
+                        <input type="text" name="smtp_port" class="form-input" value="{{ settings.smtp_port }}" placeholder="465">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>SMTP логин (email отправителя)</label>
+                        <input type="text" name="smtp_user" class="form-input" value="{{ settings.smtp_user }}" placeholder="info@markus-mart.ru">
+                    </div>
+                    <div class="form-group">
+                        <label>SMTP пароль <small class="text-muted">(оставь пустым — не менять)</small></label>
+                        <input type="password" name="smtp_password" class="form-input" placeholder="••••••••">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email получателя (куда приходят заявки)</label>
+                        <input type="email" name="admin_email" class="form-input" value="{{ settings.admin_email }}" placeholder="admin@markus-mart.ru">
+                    </div>
+                    <div class="form-group">
+                        <label>SECRET_KEY <small class="text-muted">(оставь пустым — не менять)</small></label>
+                        <input type="text" name="secret_key" class="form-input" value="{{ settings.secret_key }}" placeholder="markus-mart-secret-key-change-me">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">💾 Сохранить настройки в .env</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ОЧЕРЕДЬ ЗАКАЗОВ -->
+    <div class="admin-card">
+        <h2>🚦 Очередь заказов по товарам</h2>
+        {% if queue_data %}
+            {% for product_id, queue in queue_data.items() %}
+                {% set product = products | selectattr('id', 'equalto', product_id) | first %}
+                <div class="queue-block">
+                    <div class="queue-header">
+                        <strong>{{ product.name if product else 'Товар #' + product_id|string }}</strong>
+                        <span class="queue-count">{{ queue|length }} в очереди</span>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table queue-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Дата</th>
+                                    <th>Клиент</th>
+                                    <th>Телефон</th>
+                                    <th>Примечание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in queue %}
+                                <tr class="{% if order.is_new %}reservation-new{% endif %}">
+                                    <td class="queue-num">{{ order.actual_position }}</td>
+                                    <td class="td-date">{{ order.created_at[:16].replace("T", " ") }}</td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td><a href="tel:{{ order.customer_phone }}" class="phone-link">{{ order.customer_phone }}</a></td>
+                                    <td class="td-note">{{ order.note or "—" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-text">Пока нет заказов в очереди.</p>
+        {% endif %}
+    </div>
+
+    <!-- ЗАЯВКИ -->
+    <div class="admin-card">
+        <h2>📋 Отложения ({{ reservations|length }}) {% if new_count > 0 %}<span class="new-count-badge">{{ new_count }} новых</span>{% endif %}</h2>
+        {% if reservations %}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Товар</th>
+                            <th>Клиент</th>
+                            <th>Телефон</th>
+                            <th>Email</th>
+                            <th>Примечание</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservations %}
+                        <tr class="{% if r.is_new %}reservation-new{% endif %}">
+                            <td>
+                                {% if r.is_new %}
+                                    <span class="new-badge">🔴 NEW</span>
+                                {% else %}
+                                    <span class="read-badge">✓ Прочитано</span>
+                                {% endif %}
+                            </td>
+                            <td class="td-date">{{ r.created_at[:16].replace("T", " ") }}</td>
+                            <td>
+                                <strong>{{ r.product_name }}</strong>
+                                <p class="table-desc">{{ "{:,.0f}".format(r.price).replace(",", " ") }} ₽</p>
+                            </td>
+                            <td>{{ r.customer_name }}</td>
+                            <td><a href="tel:{{ r.customer_phone }}" class="phone-link">{{ r.customer_phone }}</a></td>
+                            <td>
+                                {% if r.customer_email %}
+                                    <a href="mailto:{{ r.customer_email }}" class="email-link">{{ r.customer_email }}</a>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="td-note">{{ r.note or "—" }}</td>
+                            <td class="td-actions">
+                                {% if r.is_new %}
+                                    <form method="POST" action="{{ url_for('admin_read_reservation', reservation_id=r.id) }}">
+                                        <button type="submit" class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:var(--accent); border:1px solid rgba(245,158,11,0.3);">✓ Прочитано</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty-text">Пока нет заявок на отложение.</p>
+        {% endif %}
+    </div>
+
+    <!-- БАНЫ -->
+    <div class="admin-card">
+        <h2>🛡️ Заблокированные IP (брутфорс-защита)</h2>
+        {% if bans %}
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>IP</th>
+                            <th>Причина</th>
+                            <th>Geo</th>
+                            <th>Заблокирован до</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ban in bans %}
+                        <tr>
+                            <td><code>{{ ban.ip }}</code></td>
+                            <td>{{ ban.reason }}</td>
+                            <td class="td-note">{{ ban.geo_info or "—" }}</td>
+                            <td class="td-date">{{ ban.banned_until[:16].replace("T", " ") }}</td>
+                            <td class="td-actions">
+                                <form method="POST" action="{{ url_for('admin_unban', ban_id=ban.id) }}">
+                                    <button type="submit" class="btn btn-sm" style="background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3);">🔓 Разблокировать</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty-text">Заблокированных IP пока нет. Все чисто ✨</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- МОДАЛКИ РЕДАКТИРОВАНИЯ -->
+{% for product in products %}
+<div class="modal" id="editModal{{ product.id }}">
+    <div class="modal-overlay" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';"></div>
+    <div class="modal-content" style="max-width:560px;">
+        <button class="modal-close" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';">&times;</button>
+        <h3>✏️ Редактировать: {{ product.name }}</h3>
+        <form method="POST" action="{{ url_for('admin_edit', product_id=product.id) }}" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group" style="flex:2;">
+                    <label>Название *</label>
+                    <input type="text" name="name" class="form-input" value="{{ product.name }}" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Цена *</label>
+                    <input type="number" name="price" class="form-input" value="{{ product.price }}" required min="0" step="0.01">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Склад, шт.</label>
+                <input type="number" name="stock" class="form-input" value="{{ product.stock }}" min="0">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea name="description" class="form-input" rows="4">{{ product.description or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Текущие фото</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                    {% if product.image_filename %}<img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 1">{% endif %}
+                    {% if product.image2 %}<img src="{{ url_for('uploaded_file', filename=product.image2) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 2">{% endif %}
+                    {% if product.image3 %}<img src="{{ url_for('uploaded_file', filename=product.image3) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 3">{% endif %}
+                    {% if not product.image_filename and not product.image2 and not product.image3 %}<span class="text-muted" style="font-size:0.85rem;">Нет фото</span>{% endif %}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Новое фото 1 (заменить)</label>
+                    <input type="file" name="image" accept="image/*" class="form-input form-file">
+                </div>
+                <div class="form-group">
+                    <label>Новое фото 2 (заменить)</label>
+                    <input type="file" name="image2" accept="image/*" class="form-input form-file">
+                </div>
+                <div class="form-group">
+                    <label>Новое фото 3 (заменить)</label>
+                    <input type="file" name="image3" accept="image/*" class="form-input form-file">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';">Отмена</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">💾 Сохранить изменения</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById('btn-' + tabId).classList.add('active');
+}
+</script>
+{% endblock %}

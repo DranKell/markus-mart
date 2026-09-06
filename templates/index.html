@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- ВАРИАНТ 7: Только навбар — нет хедера, сразу каталог -->
+
+<section class="catalog container" style="padding-top: 24px;">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Каталог</h2>
+            <p class="section-subtitle">Нажмите на карточку товара, чтобы открыть подробное описание и фото</p>
+        </div>
+    </div>
+
+    {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+            {% set images = [] %}
+            {% if product.image_filename %}{% set _ = images.append(product.image_filename) %}{% endif %}
+            {% if product.image2 %}{% set _ = images.append(product.image2) %}{% endif %}
+            {% if product.image3 %}{% set _ = images.append(product.image3) %}{% endif %}
+
+            <article class="product-card" data-product-id="{{ product.id }}">
+                <div class="product-image-wrapper">
+                    {% if product.stock > 0 %}
+                        <span class="product-badge in-stock">В наличии</span>
+                    {% else %}
+                        <span class="product-badge out-of-stock">Нет в наличии</span>
+                    {% endif %}
+                    {% if images|length > 1 %}
+                        <span class="photo-count">📷 {{ images|length }}</span>
+                    {% endif %}
+
+                    {% if images %}
+                        <div class="hover-carousel" data-images='{{ images | tojson }}' data-current="0">
+                            {% for img in images %}
+                            <img src="{{ url_for('uploaded_file', filename=img) }}" 
+                                 alt="{{ product.name }}" 
+                                 class="carousel-slide {% if loop.index0 == 0 %}active{% endif %}"
+                                 loading="lazy">
+                            {% endfor %}
+                            {% if images|length > 1 %}
+                            <div class="carousel-dots">
+                                {% for img in images %}
+                                <span class="dot {% if loop.index0 == 0 %}active{% endif %}"></span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="product-image-placeholder">
+                            <span>🏕️</span>
+                            <p>Фото скоро</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description[:90] }}{% if product.description|length > 90 %}...{% endif %}</p>
+                    <div class="product-footer">
+                        <span class="product-price">{{ "{:,.0f}".format(product.price).replace(",", " ") }} <span class="currency">₽</span></span>
+                        {% if product.stock > 0 %}
+                        <button class="btn btn-primary btn-reserve" onclick="event.stopPropagation(); openReserveModal({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                            📌 Отложить
+                        </button>
+                        {% else %}
+                        <button class="btn btn-outline btn-reserve" onclick="event.stopPropagation(); openReserveModal({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                            📌 Уточнить
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🏔️</div>
+            <h3>Пока нет товаров</h3>
+            <p>Загляните позже — скоро здесь появится снаряжение!</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- МОДАЛКА: Карточка товара (фото в ряд + увеличение) -->
+<div id="productCardModal" class="modal">
+    <div class="modal-overlay" onclick="closeProductCard()"></div>
+    <div class="modal-content product-card-modal">
+        <button class="modal-close" onclick="closeProductCard()">&times;</button>
+        <div id="productCardContent"></div>
+    </div>
+</div>
+
+<!-- МОДАЛКА: Увеличенное фото -->
+<div id="zoomModal" class="modal zoom-modal">
+    <div class="modal-overlay" onclick="closeZoom()"></div>
+    <div class="zoom-content">
+        <button class="modal-close zoom-close" onclick="closeZoom()">&times;</button>
+        <img id="zoomImage" src="" alt="">
+    </div>
+</div>
+
+<!-- МОДАЛКА: Отложить -->
+<div id="reserveModal" class="modal">
+    <div class="modal-overlay" onclick="closeReserveModal()"></div>
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeReserveModal()">&times;</button>
+        <h3>📌 Отложить товар</h3>
+        <div class="modal-product-info">
+            <p id="modalProductName" class="modal-product-name"></p>
+            <p id="modalProductPrice" class="modal-product-price"></p>
+        </div>
+        <div id="queueInfo" class="queue-info" style="display:none;">
+            <div class="queue-info-num" id="queuePosition">—</div>
+            <div class="queue-info-label">ваша позиция в очереди</div>
+        </div>
+        <form id="reserveForm" method="POST" action="">
+            <div class="form-group">
+                <label for="customer_name">Ваше имя *</label>
+                <input type="text" id="customer_name" name="customer_name" required class="form-input" placeholder="Иван Иванов">
+            </div>
+            <div class="form-group">
+                <label for="customer_phone">Телефон *</label>
+                <input type="tel" id="customer_phone" name="customer_phone" required class="form-input" placeholder="+7 (999) 123-45-67">
+            </div>
+            <div class="form-group">
+                <label for="customer_email">Email</label>
+                <input type="email" id="customer_email" name="customer_email" class="form-input" placeholder="ivan@example.com">
+            </div>
+            <div class="form-group">
+                <label for="note">Примечание</label>
+                <textarea id="note" name="note" rows="2" class="form-input" placeholder="Количество, дата получения..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">✅ Подтвердить</button>
+            <p class="form-hint">Мы свяжемся с вами в ближайшее время</p>
+        </form>
+    </div>
+</div>
+
+<script>
+const productsData = {
+    {% for p in products %}
+    {{ p.id }}: {
+        name: "{{ p.name }}",
+        description: `{{ p.description or '' }}`,
+        price: {{ p.price }},
+        stock: {{ p.stock }},
+        queueLength: {{ queue_counts[p.id] if p.id in queue_counts else 0 }},
+        images: [
+            {% if p.image_filename %}"{{ url_for('uploaded_file', filename=p.image_filename) }}",{% endif %}
+            {% if p.image2 %}"{{ url_for('uploaded_file', filename=p.image2) }}",{% endif %}
+            {% if p.image3 %}"{{ url_for('uploaded_file', filename=p.image3) }}",{% endif %}
+        ].filter(Boolean)
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+// КЛИК ПО КАРТОЧКЕ — открываем модалку
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Если кликнули по кнопке — не открываем карточку
+            if (e.target.closest('.btn-reserve')) return;
+            const productId = this.getAttribute('data-product-id');
+            openProductCard(parseInt(productId));
+        });
+    });
+});
+</script>
+{% endblock %}

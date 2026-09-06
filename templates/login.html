@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — Маркус-март{% endblock %}
+
+{% block content %}
+<section class="auth-section container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">🔐</div>
+            <h2>Вход в админ-панель</h2>
+            <p>Управление товарами и заявками</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" name="username" required 
+                       class="form-input" placeholder="admin" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required 
+                       class="form-input" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Войти</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
