@@ -151,27 +151,104 @@
             margin: 10px 0 16px;
         }
         .outdoor-hero-banner {
-            background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 23, 42, 0) 100%);
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0) 100%);
             border-bottom: 1px solid var(--border);
-            padding: 36px 0 24px;
+            padding: 36px 0 28px;
             margin-bottom: 24px;
         }
-        .hero-features {
+        .hero-banner-inner {
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 18px;
-        }
-        .hero-feature-item {
-            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.88rem;
+            justify-content: space-between;
+            gap: 36px;
+        }
+        .hero-text-col {
+            flex: 1 1 54%;
+            min-width: 290px;
+        }
+        .hero-features-grid {
+            flex: 1 1 46%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            min-width: 300px;
+        }
+        .hero-feature-card {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            border-radius: 14px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        border-color 0.28s ease, 
+                        box-shadow 0.28s ease, 
+                        background 0.28s ease;
+        }
+        .hero-feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .hero-feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(245, 158, 11, 0.6);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 10px 24px -6px rgba(245, 158, 11, 0.22), 0 0 1px 1px rgba(245, 158, 11, 0.3);
+        }
+        .hero-feature-card:hover::before {
+            opacity: 1;
+        }
+        .hero-feature-card:hover .hero-feature-icon {
+            transform: scale(1.2) rotate(8deg);
+        }
+        .hero-feature-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+            margin-bottom: 2px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-block;
+        }
+        .hero-feature-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #fff;
+            line-height: 1.25;
+        }
+        .hero-feature-sub {
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            background: var(--bg-secondary);
-            padding: 6px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
+            line-height: 1.35;
+        }
+        @media (max-width: 860px) {
+            .hero-banner-inner {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 24px;
+            }
+            .hero-features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .hero-features-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .admin-tabs-nav {
             display: flex;
@@ -220,21 +297,39 @@
 
     <!-- ГЛАВНЫЙ БАННЕР КОНЦЕПЦИИ МАГАЗИНА -->
     <div class="outdoor-hero-banner">
-        <div class="container">
-            <span style="color:var(--accent); font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
-                Магазин туристических расходников и потеряшек
-            </span>
-            <h1 class="section-title" style="font-size: 2.3rem; margin: 8px 0 10px;">
-                То, что вечно теряется на реке и в горах
-            </h1>
-            <p class="section-subtitle" style="max-width: 780px; font-size: 1.05rem;">
-                Скобы и хомуты для рамы катамарана 40 мм, трёхгранные штормовые колышки для палаток, ремнаборы для сломанных дуг, фастексы и клапаны. Всё то, что забывается на стоянках или уплывает по реке!
-            </p>
-            <div class="hero-features">
-                <div class="hero-feature-item"><span>🛶</span> <strong>Скобы 40 мм</strong> всегда в наличии</div>
-                <div class="hero-feature-item"><span>⛺</span> <strong>Колышки Y-Beam</strong> со светоотражателем</div>
-                <div class="hero-feature-item"><span>🔧</span> <strong>Ремнаборы</strong> для дуг палаток и ПВХ</div>
-                <div class="hero-feature-item"><span>⚡</span> <strong>Быстрое бронирование</strong> без предоплаты</div>
+        <div class="container hero-banner-inner">
+            <div class="hero-text-col">
+                <span style="color:var(--accent); font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+                    Магазин туристических расходников и потеряшек
+                </span>
+                <h1 class="section-title" style="font-size: 2.3rem; margin: 8px 0 10px;">
+                    То, что вечно теряется на реке и в горах
+                </h1>
+                <p class="section-subtitle" style="max-width: 640px; font-size: 1.02rem; margin-bottom: 0;">
+                    Скобы и хомуты для рамы катамарана 40 мм, трёхгранные штормовые колышки для палаток, ремнаборы для сломанных дуг, фастексы и клапаны. Всё то, что забывается на стоянках или уплывает по реке!
+                </p>
+            </div>
+            <div class="hero-features-grid">
+                <div class="hero-feature-card" onclick="filterProducts('rafting', document.querySelector('[data-category=\'rafting\']'))" title="Показать товары для сплавов">
+                    <span class="hero-feature-icon">🛶</span>
+                    <span class="hero-feature-title">Скобы 40 мм</span>
+                    <span class="hero-feature-sub">всегда в наличии</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('tent', document.querySelector('[data-category=\'tent\']'))" title="Показать колышки и палаточную фурнитуру">
+                    <span class="hero-feature-icon">⛺</span>
+                    <span class="hero-feature-title">Колышки Y-Beam</span>
+                    <span class="hero-feature-sub">со светоотражателем</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('hardware', document.querySelector('[data-category=\'hardware\']'))" title="Показать ремнаборы и фурнитуру">
+                    <span class="hero-feature-icon">🔧</span>
+                    <span class="hero-feature-title">Ремнаборы</span>
+                    <span class="hero-feature-sub">для дуг палаток и ПВХ</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('stock', document.querySelector('[data-category=\'stock\']'))" title="Показать товары в наличии">
+                    <span class="hero-feature-icon">⚡</span>
+                    <span class="hero-feature-title">Быстрое бронирование</span>
+                    <span class="hero-feature-sub">без предоплаты</span>
+                </div>
             </div>
         </div>
     </div>

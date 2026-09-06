@@ -1,17 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- ВАРИАНТ 7: Только навбар — нет хедера, сразу каталог -->
-
-<section class="catalog container" style="padding-top: 24px;">
-    <div class="section-header" style="margin-bottom: 24px;">
-        <div>
-            <h1 class="section-title" style="font-size: 2.2rem; margin-bottom: 6px;">То, что вечно теряется в походах</h1>
-            <p class="section-subtitle" style="font-size: 1rem; max-width: 760px;">
-                Экстренные расходники и комплектующие: скобы для рамы катамарана, колышки для палаток, ремнаборы для дуг и фастексы. Всё, без чего не обойтись на сплаве!
+<div class="outdoor-hero-banner" style="margin-top: -24px;">
+    <div class="container hero-banner-inner">
+        <div class="hero-text-col">
+            <span style="color:var(--accent); font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+                Магазин туристических расходников и потеряшек
+            </span>
+            <h1 class="section-title" style="font-size: 2.3rem; margin: 8px 0 10px;">
+                То, что вечно теряется на реке и в горах
+            </h1>
+            <p class="section-subtitle" style="max-width: 640px; font-size: 1.02rem; margin-bottom: 0;">
+                Скобы и хомуты для рамы катамарана 40 мм, трёхгранные штормовые колышки для палаток, ремнаборы для сломанных дуг, фастексы и клапаны. Всё то, что забывается на стоянках или уплывает по реке!
             </p>
         </div>
+        <div class="hero-features-grid">
+            <div class="hero-feature-card">
+                <span class="hero-feature-icon">🛶</span>
+                <span class="hero-feature-title">Скобы 40 мм</span>
+                <span class="hero-feature-sub">всегда в наличии</span>
+            </div>
+            <div class="hero-feature-card">
+                <span class="hero-feature-icon">⛺</span>
+                <span class="hero-feature-title">Колышки Y-Beam</span>
+                <span class="hero-feature-sub">со светоотражателем</span>
+            </div>
+            <div class="hero-feature-card">
+                <span class="hero-feature-icon">🔧</span>
+                <span class="hero-feature-title">Ремнаборы</span>
+                <span class="hero-feature-sub">для дуг палаток и ПВХ</span>
+            </div>
+            <div class="hero-feature-card">
+                <span class="hero-feature-icon">⚡</span>
+                <span class="hero-feature-title">Быстрое бронирование</span>
+                <span class="hero-feature-sub">без предоплаты</span>
+            </div>
+        </div>
     </div>
+</div>
+
+<section class="catalog container" style="padding-top: 24px;">
 
     {% if products %}
         <div class="products-grid">
