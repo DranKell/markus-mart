@@ -198,21 +198,25 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavSloganRotation();
 });
 
-// ─── Интерактивный разворот слогана на 360° по направлению курсора ───
+// ─── Интерактивный разворот слогана на 360° + ПАСХАЛКА (слоган ломается) ───
 function initNavSloganRotation() {
     const slogan = document.querySelector('.nav-slogan');
     if (!slogan) return;
 
+    const originalHTML = slogan.innerHTML;
     let prevX = null;
     let currentAngle = 0;
     let isRotating = false;
+    let spinCount = 0;
+    let isBroken = false;
 
     slogan.addEventListener('mouseenter', function(e) {
+        if (isBroken) return;
         prevX = e.clientX;
     });
 
     slogan.addEventListener('mousemove', function(e) {
-        if (isRotating) return;
+        if (isBroken || isRotating) return;
         if (prevX === null) {
             prevX = e.clientX;
             return;
@@ -223,8 +227,19 @@ function initNavSloganRotation() {
 
         if (Math.abs(deltaX) > 1) {
             isRotating = true;
+            spinCount++;
+
             const direction = deltaX > 0 ? 1 : -1;
             currentAngle += direction * 360;
+
+            if (spinCount >= 4 && spinCount < 6) {
+                slogan.classList.add('dizzy');
+            }
+
+            if (spinCount >= 6) {
+                breakSlogan();
+                return;
+            }
 
             slogan.style.transition = 'transform 0.75s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease';
             slogan.style.transform = `scaleX(1.18) rotateY(${currentAngle}deg)`;
@@ -238,4 +253,71 @@ function initNavSloganRotation() {
     slogan.addEventListener('mouseleave', function() {
         prevX = null;
     });
+
+    function breakSlogan() {
+        isBroken = true;
+        isRotating = false;
+        slogan.classList.remove('dizzy');
+        slogan.classList.add('broken');
+        
+        slogan.innerHTML = `💥 Мелочи... ХРЯСЬ! 🛶 <span class="slogan-fix-hint">🛠️ починить (клик)</span>`;
+        slogan.title = "Ой! Вы перекрутили слоган и он сломался! Кликните, чтобы починить.";
+        
+        playCrackSound();
+        slogan.addEventListener('click', repairSlogan, { once: true });
+    }
+
+    function repairSlogan(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        slogan.classList.remove('broken');
+        slogan.innerHTML = originalHTML;
+        slogan.title = "";
+        currentAngle = 0;
+        spinCount = 0;
+        
+        slogan.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease';
+        slogan.style.transform = 'scaleX(1.18) rotate(0deg) translateY(0)';
+        
+        playRepairSound();
+
+        setTimeout(() => {
+            isBroken = false;
+        }, 500);
+    }
+
+    function playCrackSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.35);
+        } catch(e) {}
+    }
+
+    function playRepairSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(350, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    }
 }
