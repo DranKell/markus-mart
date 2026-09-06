@@ -147,63 +147,76 @@
     <div id="tab-products" class="tab-panel">
         <!-- Добавление товара -->
         <div class="admin-card">
-            <h2>➕ Добавить новый товар в каталог</h2>
-            <form method="POST" action="{{ url_for('admin_add') }}" enctype="multipart/form-data" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group form-group-half">
+            <div class="admin-card-header">
+                <h2>➕ Добавить новый товар в каталог</h2>
+                <span class="text-muted" style="font-size:0.85rem;">Заполните карточку и прикрепите до 3 фотографий</span>
+            </div>
+            <form method="POST" action="{{ url_for('admin_add') }}" enctype="multipart/form-data" class="admin-form admin-form-wide">
+                <div class="admin-grid-3">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label for="name">Название товара *</label>
                         <input type="text" id="name" name="name" required class="form-input" placeholder="Например: Колышки титановые 6 шт">
                     </div>
-                    <div class="form-group form-group-half">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label for="price">Цена (₽) *</label>
                         <input type="number" id="price" name="price" required min="0" step="0.01" class="form-input" placeholder="890">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group form-group-half">
-                        <label for="stock">Количество на складе *</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="stock">Остаток на складе, шт. *</label>
                         <input type="number" id="stock" name="stock" required min="0" class="form-input" placeholder="20">
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="description">Описание и характеристики</label>
-                    <textarea id="description" name="description" rows="3" class="form-input" placeholder="Размеры, диаметр, назначение, материал..."></textarea>
+                    <label for="description">Описание и характеристики товара</label>
+                    <textarea id="description" name="description" rows="3" class="form-input" placeholder="Размеры, диаметр, назначение, особенности применения..."></textarea>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="image">Фото 1 (главное)</label>
+
+                <div class="admin-grid-photos">
+                    <div class="photo-input-card">
+                        <label for="image">📷 Главное фото (обложка)</label>
                         <input type="file" id="image" name="image" accept="image/*" class="form-input form-file">
                     </div>
-                    <div class="form-group">
-                        <label for="image2">Фото 2</label>
+                    <div class="photo-input-card">
+                        <label for="image2">🖼️ Доп. фото 2</label>
                         <input type="file" id="image2" name="image2" accept="image/*" class="form-input form-file">
                     </div>
-                    <div class="form-group">
-                        <label for="image3">Фото 3</label>
+                    <div class="photo-input-card">
+                        <label for="image3">🔍 Доп. фото 3</label>
                         <input type="file" id="image3" name="image3" accept="image/*" class="form-input form-file">
                     </div>
                 </div>
-                <small class="form-hint-inline" style="display:block; margin-bottom:16px;">PNG, JPG, WEBP до 16 МБ. До 3 фото на товар.</small>
-                <button type="submit" class="btn btn-primary">➕ Добавить товар</button>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:8px;">
+                    <small class="text-muted">Поддерживаются форматы PNG, JPG, WEBP до 16 МБ.</small>
+                    <button type="submit" class="btn btn-primary" style="padding:12px 28px;">➕ Опубликовать товар</button>
+                </div>
             </form>
         </div>
 
         <!-- Таблица товаров -->
         <div class="admin-card">
-            <h2>🛍️ Товары на складе ({{ products|length }})</h2>
+            <div class="admin-card-header">
+                <h2>🛍️ Товары на складе ({{ products|length }})</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="stock-badge in-stock" style="font-size:0.75rem;">В наличии: {{ products | selectattr('stock', 'gt', 0) | list | length }}</span>
+                    <span class="stock-badge out-of-stock" style="font-size:0.75rem;">Под заказ: {{ products | selectattr('stock', 'le', 0) | list | length }}</span>
+                </div>
+            </div>
+
             {% if products %}
                 <div class="admin-table-wrapper">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Фото</th>
-                                <th>Название</th>
-                                <th>Цена</th>
-                                <th>Остаток</th>
-                                <th>Статус</th>
-                                <th>Фото</th>
-                                <th>Бронь</th>
-                                <th>Действия</th>
+                                <th style="width:70px; text-align:center;">Фото</th>
+                                <th>Наименование и описание</th>
+                                <th style="width:110px;">Цена</th>
+                                <th style="width:130px; text-align:center;">Остаток (шт)</th>
+                                <th style="width:120px; text-align:center;">Статус</th>
+                                <th style="width:90px; text-align:center;">Галерея</th>
+                                <th style="width:110px; text-align:center;">Бронь</th>
+                                <th style="width:140px; text-align:right;">Действия</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -213,7 +226,7 @@
                             {% if product.image2 %}{% set img_count = img_count + 1 %}{% endif %}
                             {% if product.image3 %}{% set img_count = img_count + 1 %}{% endif %}
                             <tr>
-                                <td class="td-image">
+                                <td style="text-align:center;">
                                     {% if product.image_filename %}
                                         <img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" alt="" class="admin-thumb">
                                     {% else %}
@@ -221,41 +234,47 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <strong>{{ product.name }}</strong>
-                                    {% if product.description %}
-                                        <p class="table-desc">{{ product.description[:90] }}{% if product.description|length > 90 %}...{% endif %}</p>
-                                    {% endif %}
+                                    <div class="admin-product-cell">
+                                        <span class="admin-product-title">{{ product.name }}</span>
+                                        {% if product.description %}
+                                            <span class="admin-product-desc" title="{{ product.description }}">{{ product.description }}</span>
+                                        {% endif %}
+                                    </div>
                                 </td>
                                 <td class="td-price">{{ "{:,.0f}".format(product.price).replace(",", " ") }} ₽</td>
                                 <td>
-                                    <form method="POST" action="{{ url_for('admin_update_stock', product_id=product.id) }}" style="display:flex; gap:6px; align-items:center;">
-                                        <input type="number" name="stock" value="{{ product.stock }}" min="0" style="width:60px; padding:6px 8px; text-align:center;" class="form-input">
-                                        <button type="submit" class="btn btn-sm" style="padding:6px 10px; background:var(--accent); color:#fff; font-size:0.75rem;" title="Сохранить остаток">💾</button>
+                                    <form method="POST" action="{{ url_for('admin_update_stock', product_id=product.id) }}" class="stock-quick-form" style="justify-content:center;">
+                                        <input type="number" name="stock" value="{{ product.stock }}" min="0" class="form-input stock-input-sm">
+                                        <button type="submit" class="btn-stock-save" title="Сохранить остаток">💾</button>
                                     </form>
                                 </td>
-                                <td>
+                                <td style="text-align:center;">
                                     {% if product.stock > 0 %}
-                                        <span class="stock-badge in-stock" style="color:var(--success);">✅ В наличии</span>
+                                        <span class="stock-badge in-stock">✅ В наличии</span>
                                     {% else %}
-                                        <span class="stock-badge out-of-stock" style="color:var(--text-muted);">❌ Под заказ</span>
+                                        <span class="stock-badge out-of-stock">❌ Под заказ</span>
                                     {% endif %}
                                 </td>
-                                <td><span class="photo-badge">{{ img_count }} 📷</span></td>
-                                <td>
+                                <td style="text-align:center;">
+                                    <span class="photo-badge">{{ img_count }}/3 📷</span>
+                                </td>
+                                <td style="text-align:center;">
                                     {% if queue_data.get(product.id) %}
-                                        <span class="queue-count" style="background:var(--accent-glow); color:var(--accent); padding:3px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">{{ queue_data[product.id]|length }} в очереди</span>
+                                        <span class="queue-count" style="background:var(--accent-glow); color:var(--accent); padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700;">{{ queue_data[product.id]|length }} в очереди</span>
                                     {% else %}
                                         <span class="text-muted" style="font-size:0.8rem;">—</span>
                                     {% endif %}
                                 </td>
-                                <td class="td-actions">
-                                    <button class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:var(--accent); border:1px solid rgba(245,158,11,0.3);" onclick="document.getElementById('editModal{{ product.id }}').classList.add('active'); document.body.style.overflow='hidden';">
-                                        ✏️ Редакт.
-                                    </button>
-                                    <form method="POST" action="{{ url_for('admin_delete', product_id=product.id) }}"
-                                          onsubmit="return confirm('Удалить товар &quot;{{ product.name }}&quot; и все связанные бронирования?');" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-                                    </form>
+                                <td>
+                                    <div class="actions-cluster" style="justify-content:flex-end;">
+                                        <button type="button" class="btn-edit-product" onclick="document.getElementById('editModal{{ product.id }}').classList.add('active'); document.body.style.overflow='hidden';">
+                                            ✏️ Редакт.
+                                        </button>
+                                        <form method="POST" action="{{ url_for('admin_delete', product_id=product.id) }}"
+                                              onsubmit="return confirm('Удалить товар &quot;{{ product.name }}&quot; и все связанные бронирования?');" style="display:inline; margin:0;">
+                                            <button type="submit" class="btn btn-danger btn-sm" style="padding:7px 10px; border-radius:8px;" title="Удалить товар">🗑</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -429,48 +448,68 @@
 {% for product in products %}
 <div id="editModal{{ product.id }}" class="modal">
     <div class="modal-overlay" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';"></div>
-    <div class="modal-content" style="max-width:600px;">
+    <div class="modal-content edit-product-modal-content">
         <button class="modal-close" onclick="document.getElementById('editModal{{ product.id }}').classList.remove('active'); document.body.style.overflow='';">&times;</button>
-        <h3>✏️ Редактирование: {{ product.name }}</h3>
-        <form method="POST" action="{{ url_for('admin_edit', product_id=product.id) }}" enctype="multipart/form-data" class="admin-form" style="margin-top:16px;">
-            <div class="form-row">
-                <div class="form-group" style="flex:2;">
+        <h3 style="display:flex; align-items:center; gap:8px;">✏️ Редактирование: {{ product.name }}</h3>
+        <form method="POST" action="{{ url_for('admin_edit', product_id=product.id) }}" enctype="multipart/form-data" class="admin-form admin-form-wide" style="margin-top:16px;">
+            <div class="admin-grid-3">
+                <div class="form-group" style="margin-bottom:0;">
                     <label>Название товара *</label>
                     <input type="text" name="name" class="form-input" value="{{ product.name }}" required>
                 </div>
-                <div class="form-group" style="flex:1;">
+                <div class="form-group" style="margin-bottom:0;">
                     <label>Цена (₽) *</label>
                     <input type="number" name="price" class="form-input" value="{{ product.price }}" required min="0" step="0.01">
                 </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Остаток на складе, шт.</label>
+                    <input type="number" name="stock" class="form-input" value="{{ product.stock }}" min="0">
+                </div>
             </div>
+
             <div class="form-group">
-                <label>Остаток на складе, шт.</label>
-                <input type="number" name="stock" class="form-input" value="{{ product.stock }}" min="0">
-            </div>
-            <div class="form-group">
-                <label>Описание</label>
+                <label>Описание и характеристики</label>
                 <textarea name="description" class="form-input" rows="4">{{ product.description or '' }}</textarea>
             </div>
+
             <div class="form-group">
-                <label>Текущие фото</label>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-                    {% if product.image_filename %}<img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 1">{% endif %}
-                    {% if product.image2 %}<img src="{{ url_for('uploaded_file', filename=product.image2) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 2">{% endif %}
-                    {% if product.image3 %}<img src="{{ url_for('uploaded_file', filename=product.image3) }}" style="width:70px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" title="Фото 3">{% endif %}
-                    {% if not product.image_filename and not product.image2 and not product.image3 %}<span class="text-muted" style="font-size:0.85rem;">Нет фото</span>{% endif %}
+                <label>Текущие фото товара</label>
+                <div class="current-photos-grid">
+                    {% if product.image_filename %}
+                        <div class="current-photo-item">
+                            <img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" alt="">
+                            <span class="current-photo-label">Фото 1</span>
+                        </div>
+                    {% endif %}
+                    {% if product.image2 %}
+                        <div class="current-photo-item">
+                            <img src="{{ url_for('uploaded_file', filename=product.image2) }}" alt="">
+                            <span class="current-photo-label">Фото 2</span>
+                        </div>
+                    {% endif %}
+                    {% if product.image3 %}
+                        <div class="current-photo-item">
+                            <img src="{{ url_for('uploaded_file', filename=product.image3) }}" alt="">
+                            <span class="current-photo-label">Фото 3</span>
+                        </div>
+                    {% endif %}
+                    {% if not product.image_filename and not product.image2 and not product.image3 %}
+                        <span class="text-muted" style="font-size:0.85rem;">Фотографий пока нет</span>
+                    {% endif %}
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Новое фото 1 (заменить)</label>
+
+            <div class="admin-grid-photos">
+                <div class="photo-input-card">
+                    <label>Заменить Фото 1</label>
                     <input type="file" name="image" accept="image/*" class="form-input form-file">
                 </div>
-                <div class="form-group">
-                    <label>Новое фото 2 (заменить)</label>
+                <div class="photo-input-card">
+                    <label>Заменить Фото 2</label>
                     <input type="file" name="image2" accept="image/*" class="form-input form-file">
                 </div>
-                <div class="form-group">
-                    <label>Новое фото 3 (заменить)</label>
+                <div class="photo-input-card">
+                    <label>Заменить Фото 3</label>
                     <input type="file" name="image3" accept="image/*" class="form-input form-file">
                 </div>
             </div>
