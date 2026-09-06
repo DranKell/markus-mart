@@ -288,9 +288,6 @@
                     <label for="adminLoginPassword">Пароль администратора</label>
                     <input type="password" id="adminLoginPassword" required class="form-input" placeholder="••••••••">
                 </div>
-                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:10px 12px; border-radius:8px; font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">
-                    💡 Пароль по умолчанию: <strong style="color:var(--accent);">markus2026</strong> (логин: admin)
-                </div>
                 <button type="submit" class="btn btn-primary btn-full">🔓 Войти в систему</button>
             </form>
         </div>
@@ -462,7 +459,7 @@
                         <li>Защита от подбора паролей (брутфорса): <strong>Активна (лимит: 3 попытки)</strong></li>
                         <li>Шифрование сессии: <strong>SHA-256 / Werkzeug Security</strong></li>
                         <li>Текущий логин: <code>admin</code></li>
-                        <li>Пароль: <code>markus2026</code> (можно изменить в .env на сервере)</li>
+                        <li>Пароль: <strong>Задан в настройках (.env)</strong></li>
                         <li>Уведомления на почту: <strong>info@markus-mart.ru</strong> (SMTP SSL 465)</li>
                     </ul>
                 </div>

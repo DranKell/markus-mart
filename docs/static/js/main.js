@@ -292,7 +292,7 @@ function handleAdminLoginSubmit(e) {
         // Ошибка пароля
         adminLoginAttempts++;
         if (errorEl) {
-            errorEl.innerHTML = `⛔ Неверный логин или пароль! (Попытка ${adminLoginAttempts} из 3)<br><small style="color:var(--text-muted)">Подсказка: логин <b>admin</b>, пароль <b>markus2026</b></small>`;
+            errorEl.innerHTML = `⛔ Неверный логин или пароль! (Попытка ${adminLoginAttempts} из 3)`;
             errorEl.style.display = 'block';
         }
         if (card) {
