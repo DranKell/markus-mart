@@ -447,35 +447,37 @@ function renderAdminProducts() {
 
         return `
         <tr>
-            <td style="text-align:center; width:50px;">${iconOrPhoto}</td>
+            <td style="text-align:center; width:52px;">${iconOrPhoto}</td>
             <td style="font-weight:700; color:var(--text-primary);">
-                <div style="font-size:0.95rem;">${p.name}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:normal; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                <div style="font-size:0.95rem; line-height:1.3;">${p.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:normal; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;">
                     ${p.description}
                 </div>
             </td>
-            <td style="font-size:0.82rem; color:var(--text-secondary);">${categoryName}</td>
-            <td style="color:var(--accent); font-weight:700; white-space:nowrap;">${p.price.toLocaleString('ru-RU')} ₽</td>
-            <td>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <button class="btn btn-outline" style="padding:2px 8px; font-size:0.8rem;" onclick="changeProductStock(${p.id}, -1)">-</button>
-                    <span style="font-weight:700; min-width:28px; text-align:center;">${p.stock}</span>
-                    <button class="btn btn-outline" style="padding:2px 8px; font-size:0.8rem;" onclick="changeProductStock(${p.id}, 1)">+</button>
+            <td style="font-size:0.82rem; color:var(--text-secondary); white-space:nowrap;">${categoryName}</td>
+            <td style="color:var(--accent); font-weight:700; white-space:nowrap; font-size:0.95rem;">${p.price.toLocaleString('ru-RU')} ₽</td>
+            <td style="white-space:nowrap;">
+                <div class="stock-control-cluster">
+                    <button class="btn-stock-pill" onclick="changeProductStock(${p.id}, -1)" title="Уменьшить">-</button>
+                    <span class="stock-val">${p.stock}</span>
+                    <button class="btn-stock-pill" onclick="changeProductStock(${p.id}, 1)" title="Увеличить">+</button>
                 </div>
             </td>
-            <td>
-                <span class="badge ${p.stock > 0 ? 'badge-success' : 'badge-danger'}" 
-                      style="cursor:pointer;" onclick="toggleProductStockStatus(${p.id})" title="Кликните для переключения статуса">
+            <td style="white-space:nowrap;">
+                <span class="badge-pill ${p.stock > 0 ? 'in-stock' : 'out-of-stock'}" 
+                      onclick="toggleProductStockStatus(${p.id})" title="Кликните для переключения статуса">
                     ${p.stock > 0 ? '✅ В наличии' : '❌ Под заказ'}
                 </span>
             </td>
             <td style="text-align:right; white-space:nowrap;">
-                <button class="btn btn-primary" style="padding:4px 10px; font-size:0.78rem; margin-right:4px;" onclick="openEditProductModal(${p.id})" title="Редактировать товар">
-                    ✏️ Изменить
-                </button>
-                <button class="btn btn-outline" style="padding:4px 8px; font-size:0.78rem; border-color:var(--danger); color:var(--danger);" onclick="deleteAdminProduct(${p.id})" title="Удалить товар">
-                    🗑️
-                </button>
+                <div class="admin-actions-cell">
+                    <button class="btn btn-primary btn-action-edit" onclick="openEditProductModal(${p.id})" title="Редактировать товар">
+                        ✏️ Изменить
+                    </button>
+                    <button class="btn btn-action-del" onclick="deleteAdminProduct(${p.id})" title="Удалить товар">
+                        🗑️
+                    </button>
+                </div>
             </td>
         </tr>
         `;
