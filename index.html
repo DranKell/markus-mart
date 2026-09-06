@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Маркус-март — Экстренные расходники и снаряжение для туристов</title>
+    <meta name="description" content="Магазин товаров, которые постоянно теряются на сплавах и в походах: хомуты для катамарана 40 мм, колышки для палаток, ремнаборы для дуг, фастексы.">
+    <link rel="stylesheet" href="./static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Иконка в закладке браузера (Favicon) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="shortcut icon" href="./favicon.ico">
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .filter-pill {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .filter-pill:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .filter-pill.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-glow);
+        }
+        .search-box {
+            position: relative;
+            min-width: 240px;
+            flex-grow: 1;
+            max-width: 380px;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 9px 16px 9px 38px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .badge-count {
+            display: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 2px 7px;
+            margin-left: 6px;
+        }
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin-top: 16px;
+        }
+        .admin-table th {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .admin-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-table);
+            vertical-align: middle;
+        }
+        .order-success-card {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .order-success-icon {
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+        }
+        .order-id-badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Oswald', sans-serif;
+            margin: 10px 0 16px;
+        }
+        .outdoor-hero-banner {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 36px 0 28px;
+            margin-bottom: 24px;
+        }
+        .hero-banner-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 36px;
+        }
+        .hero-text-col {
+            flex: 1 1 54%;
+            min-width: 290px;
+        }
+        .hero-features-grid {
+            flex: 1 1 46%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            min-width: 300px;
+        }
+        .hero-feature-card {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            border-radius: 14px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        border-color 0.28s ease, 
+                        box-shadow 0.28s ease, 
+                        background 0.28s ease;
+        }
+        .hero-feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .hero-feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(245, 158, 11, 0.6);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 10px 24px -6px rgba(245, 158, 11, 0.22), 0 0 1px 1px rgba(245, 158, 11, 0.3);
+        }
+        .hero-feature-card:hover::before {
+            opacity: 1;
+        }
+        .hero-feature-card:hover .hero-feature-icon {
+            transform: scale(1.2) rotate(8deg);
+        }
+        .hero-feature-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+            margin-bottom: 2px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-block;
+        }
+        .hero-feature-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #fff;
+            line-height: 1.25;
+        }
+        .hero-feature-sub {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+        @media (max-width: 860px) {
+            .hero-banner-inner {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 24px;
+            }
+            .hero-features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
+            }
+            .outdoor-hero-banner {
+                padding: 24px 0 20px;
+            }
+            .section-title {
+                font-size: 1.85rem !important;
+            }
+            .section-subtitle {
+                font-size: 0.95rem !important;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .filter-pills {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 6px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .filter-pill {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .search-box {
+                max-width: 100%;
+                min-width: 0;
+            }
+            .modal-content {
+                padding: 20px 16px;
+                margin: 12px;
+                max-height: 94vh;
+                border-radius: 16px;
+            }
+            .admin-table th, .admin-table td {
+                padding: 8px 6px;
+                font-size: 0.8rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero-features-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .hero-feature-card {
+                padding: 12px 14px;
+            }
+            .nav-link-admin {
+                padding: 6px 10px;
+                font-size: 0.78rem;
+            }
+            .direct-contact-card {
+                padding: 12px;
+                gap: 12px;
+            }
+            .direct-contact-icon-wrapper {
+                width: 44px;
+                height: 44px;
+                font-size: 1.4rem;
+                border-radius: 10px;
+            }
+            .direct-contact-val {
+                font-size: 0.98rem;
+            }
+            .direct-contact-label {
+                font-size: 0.7rem;
+            }
+            .direct-contact-hint {
+                font-size: 0.74rem;
+            }
+            .direct-contact-action {
+                padding: 6px 10px;
+                font-size: 0.76rem;
+            }
+            .order-preview-box {
+                padding: 10px 12px;
+                font-size: 0.78rem;
+            }
+        }
+        .admin-tabs-nav {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .admin-tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .admin-tab-btn:hover {
+            color: var(--text-primary);
+        }
+        .admin-tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ─── Стили окна прямых контактов (Email / Телефон) ─── */
+        .direct-contact-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 14px;
+            position: relative;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+        }
+        .direct-contact-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.25);
+        }
+        .direct-contact-icon-wrapper {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        .direct-contact-icon-mail {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.3));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .direct-contact-icon-phone {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.3));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+        }
+        .direct-contact-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .direct-contact-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .direct-contact-val {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.15rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+        }
+        .direct-contact-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+        .direct-contact-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .direct-contact-action-mail {
+            background: var(--accent);
+            color: #fff;
+        }
+        .direct-contact-action-phone {
+            background: #22c55e;
+            color: #fff;
+        }
+        .order-preview-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 14px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+        .order-preview-title {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <img src="./logo.png" alt="Маркус-март" class="logo-img">
+                <div class="logo-text">Маркус<span>-март</span></div>
+            </a>
+            <div class="nav-links">
+                <span class="nav-slogan">Мелочи, которые спасают сплав! 🛶</span>
+                <a href="#catalog" class="nav-link">Каталог</a>
+                <button class="nav-link nav-link-admin" id="adminNavBtn" onclick="onAdminNavClick()" style="background:none; border:none; cursor:pointer;">
+                    🔐 Вход в админку <span class="badge-count" id="ordersBadge"></span>
+                </button>
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Переключить тему">☀️</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ГЛАВНЫЙ БАННЕР КОНЦЕПЦИИ МАГАЗИНА -->
+    <div class="outdoor-hero-banner">
+        <div class="container hero-banner-inner">
+            <div class="hero-text-col">
+                <span style="color:var(--accent); font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+                    Магазин туристических расходников и потеряшек
+                </span>
+                <h1 class="section-title" style="font-size: 2.3rem; margin: 8px 0 10px;">
+                    То, что вечно теряется на реке и в горах
+                </h1>
+                <p class="section-subtitle" style="max-width: 640px; font-size: 1.02rem; margin-bottom: 0;">
+                    Скобы и хомуты для рамы катамарана 40 мм, трёхгранные штормовые колышки для палаток, ремнаборы для сломанных дуг, фастексы и клапаны. Всё то, что забывается на стоянках или уплывает по реке!
+                </p>
+            </div>
+            <div class="hero-features-grid">
+                <div class="hero-feature-card" onclick="filterProducts('rafting', document.querySelector('[data-category=\'rafting\']'))" title="Показать товары для сплавов">
+                    <span class="hero-feature-icon">🛶</span>
+                    <span class="hero-feature-title">Скобы 40 мм</span>
+                    <span class="hero-feature-sub">всегда в наличии</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('tent', document.querySelector('[data-category=\'tent\']'))" title="Показать колышки и палаточную фурнитуру">
+                    <span class="hero-feature-icon">⛺</span>
+                    <span class="hero-feature-title">Колышки Y-Beam</span>
+                    <span class="hero-feature-sub">со светоотражателем</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('hardware', document.querySelector('[data-category=\'hardware\']'))" title="Показать ремнаборы и фурнитуру">
+                    <span class="hero-feature-icon">🔧</span>
+                    <span class="hero-feature-title">Ремнаборы</span>
+                    <span class="hero-feature-sub">для дуг палаток и ПВХ</span>
+                </div>
+                <div class="hero-feature-card" onclick="filterProducts('stock', document.querySelector('[data-category=\'stock\']'))" title="Показать товары в наличии">
+                    <span class="hero-feature-icon">⚡</span>
+                    <span class="hero-feature-title">Быстрое бронирование</span>
+                    <span class="hero-feature-sub">без предоплаты</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАТАЛОГ -->
+    <main class="main-content">
+        <section class="catalog container" id="catalog">
+            <!-- Панель фильтров и поиска -->
+            <div class="filter-bar">
+                <div class="filter-pills">
+                    <button class="filter-pill active" data-category="all" onclick="filterProducts('all', this)">Все расходники (10)</button>
+                    <button class="filter-pill" data-category="rafting" onclick="filterProducts('rafting', this)">🌊 Для катамаранов и сплавов</button>
+                    <button class="filter-pill" data-category="tent" onclick="filterProducts('tent', this)">⛺ Колышки и дуги палаток</button>
+                    <button class="filter-pill" data-category="hardware" onclick="filterProducts('hardware', this)">🔧 Фурнитура и ремнаборы</button>
+                    <button class="filter-pill" data-category="stock" onclick="filterProducts('stock', this)">✅ В наличии</button>
+                </div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск: хомуты, колышки, дуги..." oninput="handleSearch(this.value)">
+                </div>
+            </div>
+
+            <!-- Сетка товаров (динамически рендерится через JavaScript) -->
+            <div class="products-grid" id="productsContainer">
+            </div>
+        </section>
+    </main>
+
+    <!-- МОДАЛКА 1: ВХОД В АДМИНКУ ПО ПАРОЛЮ -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-overlay" onclick="closeAdminLoginModal()"></div>
+        <div class="modal-content" style="max-width: 420px;">
+            <button class="modal-close" onclick="closeAdminLoginModal()">&times;</button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">🔐</div>
+                <h2 style="font-size: 1.5rem; margin-bottom: 4px;">Вход в админ-панель</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Доступ к управлению заказами и складом
+                </p>
+            </div>
+
+            <div id="adminLoginError" style="display:none; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger); padding:10px 14px; border-radius:8px; font-size:0.85rem; margin-bottom:16px;">
+            </div>
+
+            <form id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="adminLoginUsername">Логин</label>
+                    <input type="text" id="adminLoginUsername" required class="form-input" value="admin" placeholder="admin">
+                </div>
+                <div class="form-group">
+                    <label for="adminLoginPassword">Пароль администратора</label>
+                    <input type="password" id="adminLoginPassword" required class="form-input" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">🔓 Войти в систему</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА 2: ПОЛНОЦЕННЫЙ ДАШБОРД АДМИНИСТРАТОРА (ЗАКАЗЫ И СКЛАД) -->
+    <div id="adminModal" class="modal">
+        <div class="modal-overlay" onclick="closeAdminModal()"></div>
+        <div class="modal-content" style="max-width: 960px; width: 95%;">
+            <button class="modal-close" onclick="closeAdminModal()">&times;</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.6rem;">⚙️ Панель администратора</h2>
+                    <span style="color:var(--success); font-size:0.85rem;">● Сессия активна (admin)</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.85rem; border-color:var(--danger); color:var(--danger);" onclick="adminLogout()">
+                        🚪 Выйти
+                    </button>
+                </div>
+            </div>
+
+            <!-- Навигация по табам админки -->
+            <div class="admin-tabs-nav">
+                <button class="admin-tab-btn active" id="btn-tab-admin-orders" onclick="switchAdminTab('tab-admin-orders')">
+                    📋 Заказы клиентов (<span id="adminOrdersTabCount">0</span>)
+                </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-products" onclick="switchAdminTab('tab-admin-products')">
+                    🛍️ Управление складом и товарами
+                </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-email" onclick="switchAdminTab('tab-admin-email')">
+                    ✉️ Настройка почты
+                </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-security" onclick="switchAdminTab('tab-admin-security')">
+                    🛡️ Безопасность
+                </button>
+            </div>
+
+            <!-- Таб 1: Заказы -->
+            <div id="tab-admin-orders" class="admin-tab-pane">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
+                    <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">
+                        Кликните на статус (🔴 Новый / 🟠 В работе / 🟢 Выполнен) для его быстрого переключения.
+                    </p>
+                    <button class="btn btn-outline" style="padding: 4px 12px; font-size: 0.8rem;" onclick="clearAllOrders()">
+                        🗑️ Очистить список
+                    </button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Номер</th>
+                                <th>Товар</th>
+                                <th>Покупатель / Контакты</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                                <th>Удалить</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="adminEmptyOrders" style="display:none; text-align: center; padding: 40px 0; color: var(--text-muted);">
+                    <div style="font-size: 2.5rem; margin-bottom: 8px;">📭</div>
+                    <p>Заявок пока нет. Клиенты могут бронировать товары на сайте!</p>
+                </div>
+            </div>
+
+            <!-- Таб 2: Склад и товары -->
+            <div id="tab-admin-products" class="admin-tab-pane" style="display:none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h4 style="margin: 0 0 4px; color: var(--text-primary); font-size: 1.1rem;">Каталог и складские запасы</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                            Редактируйте названия, цены, описания, фото и остатки, или добавляйте новые позиции.
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.88rem;" onclick="openAddProductModal()">
+                        ➕ Добавить товар
+                    </button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 54px; text-align: center;">Фото</th>
+                                <th>Наименование</th>
+                                <th style="width: 100px;">Категория</th>
+                                <th style="width: 110px;">Цена</th>
+                                <th style="width: 120px;">Склад</th>
+                                <th style="width: 120px;">Статус</th>
+                                <th style="width: 140px; text-align: right;">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Таб 3: Настройки почты -->
+            <div id="tab-admin-email" class="admin-tab-pane" style="display:none;">
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">
+                    Укажите, с какой почты отправлять сообщения и на какой адрес получать уведомления о заказах (почта отправителя и получателя могут совпадать!).
+                </p>
+
+                <div id="emailSettingsSavedAlert" style="display:none; background:var(--success-bg); color:var(--success); border:1px solid var(--success); padding:10px 14px; border-radius:8px; font-size:0.85rem; margin-bottom:16px;"></div>
+
+                <!-- Быстрые пресеты -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:14px; border-radius:10px; margin-bottom:20px;">
+                    <label style="font-weight:600; display:block; margin-bottom:8px; font-size:0.85rem;">⚡ Быстрые настройки популярных провайдеров:</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('yandex')">
+                            🟡 Яндекс.Почта (465 SSL)
+                        </button>
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('mailru')">
+                            🔵 Mail.ru (465 SSL)
+                        </button>
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('gmail')">
+                            🔴 Gmail (587 TLS)
+                        </button>
+                    </div>
+                </div>
+
+                <form id="adminEmailSettingsForm" onsubmit="handleEmailSettingsSubmit(event)">
+                    <h4 style="margin: 0 0 10px; color:var(--accent); font-size:1rem;">1. Почта-отправитель (SMTP)</h4>
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpUser">Email отправителя *</label>
+                            <input type="email" id="adminSmtpUser" required class="form-input" placeholder="info@markus-mart.ru" oninput="handleSenderEmailInput(this.value)">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpPassword">Пароль приложения SMTP *</label>
+                            <input type="password" id="adminSmtpPassword" class="form-input" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpServer">SMTP сервер *</label>
+                            <input type="text" id="adminSmtpServer" required class="form-input" value="smtp.yandex.ru" placeholder="smtp.yandex.ru">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpPort">SMTP порт *</label>
+                            <input type="number" id="adminSmtpPort" required class="form-input" value="465" placeholder="465">
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 16px 0 10px; color:var(--accent); font-size:1rem;">2. Почта-получатель (куда слать сообщения о заказах)</h4>
+                    <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="adminSameEmailCheckbox" onchange="toggleSameEmail(this.checked)" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="adminSameEmailCheckbox" style="cursor:pointer; font-weight:600; font-size:0.88rem;">
+                            ✉️ Отправлять на ту же почту (совпадает с отправителем)
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminRecipientEmail">Email для получения заказов *</label>
+                        <input type="email" id="adminRecipientEmail" required class="form-input" placeholder="admin@markus-mart.ru">
+                    </div>
+
+                    <h4 style="margin: 16px 0 10px; color:var(--accent); font-size:1rem;">3. Контактный телефон для клиентов (для звонков при бронировании)</h4>
+                    <div class="form-group">
+                        <label for="adminContactPhone">Номер телефона для звонков и мессенджеров</label>
+                        <input type="tel" id="adminContactPhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                        <span style="font-size:0.78rem; color:var(--text-muted); margin-top:4px; display:block;">
+                            Этот телефон и email будут показаны клиенту при нажатии на «Отложить»
+                        </span>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-primary" style="flex:2; min-width:200px;">💾 Сохранить настройки почты</button>
+                        <button type="button" class="btn btn-outline" style="flex:1; min-width:180px; border-color:var(--accent); color:var(--accent);" onclick="testEmailSend()">
+                            🧪 Проверить отправку
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Таб 4: Безопасность -->
+            <div id="tab-admin-security" class="admin-tab-pane" style="display:none;">
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:20px; border-radius:12px; margin-top:10px;">
+                    <h3 style="margin-top:0;">🛡️ Статус защиты магазина</h3>
+                    <ul style="color:var(--text-secondary); line-height:1.8; font-size:0.9rem; padding-left:20px;">
+                        <li>Защита от подбора паролей (брутфорса): <strong>Активна (лимит: 3 попытки)</strong></li>
+                        <li>Шифрование сессии: <strong>SHA-256 / Werkzeug Security</strong></li>
+                        <li>Текущий логин: <code>admin</code></li>
+                        <li>Пароль: <strong>Задан в настройках (.env)</strong></li>
+                        <li>Уведомления на почту: <strong>info@markus-mart.ru</strong> (SMTP SSL 465)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:10px; font-size: 0.8rem; color: var(--text-muted);">
+                <div>📍 Версия магазина: <strong>Markus-Mart v2.0 (Outdoor Lost & Found Edition)</strong></div>
+                <div>🔒 Защищено паролем</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Карточка товара (Детальный просмотр + Галерея) -->
+    <div id="productCardModal" class="modal">
+        <div class="modal-overlay" onclick="closeProductCard()"></div>
+        <div class="modal-content product-card-modal">
+            <button class="modal-close" onclick="closeProductCard()">&times;</button>
+            <div id="productCardContent"></div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Увеличенное фото (Zoom) -->
+    <div id="zoomModal" class="modal zoom-modal">
+        <div class="modal-overlay" onclick="closeZoom()"></div>
+        <div class="zoom-content">
+            <button class="modal-close zoom-close" onclick="closeZoom()">&times;</button>
+            <img id="zoomImage" src="" alt="Zoom">
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Отложить (Прямой контакт: Email с авто-текстом и Телефон) -->
+    <div id="reserveModal" class="modal">
+        <div class="modal-overlay" onclick="closeReserveModal()"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeReserveModal()">&times;</button>
+            <h3 style="margin-bottom: 8px;">📌 Отложить снаряжение</h3>
+            <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:18px;">
+                Свяжитесь с нами напрямую для бронирования. Нажмите на почту или телефон, чтобы мгновенно открыть приложение:
+            </p>
+            
+            <div class="modal-product-info" style="margin-bottom: 18px;">
+                <p id="modalProductName" class="modal-product-name"></p>
+                <p id="modalProductPrice" class="modal-product-price"></p>
+            </div>
+
+            <div class="direct-contacts-list">
+                <!-- Кнопка Email -->
+                <a id="reserveEmailLink" href="#" class="direct-contact-card" title="Написать на почту">
+                    <div class="direct-contact-icon-wrapper direct-contact-icon-mail">
+                        ✉️
+                    </div>
+                    <div class="direct-contact-info">
+                        <div class="direct-contact-label">Написать на Email продавца</div>
+                        <div class="direct-contact-val" id="reserveEmailVal">admin@markus-mart.ru</div>
+                        <div class="direct-contact-hint">Тема и данные заказа уже будут заполнены</div>
+                    </div>
+                    <div class="direct-contact-action direct-contact-action-mail">
+                        Написать
+                    </div>
+                </a>
+
+                <!-- Кнопка Телефон -->
+                <a id="reservePhoneLink" href="#" class="direct-contact-card" title="Позвонить продавцу">
+                    <div class="direct-contact-icon-wrapper direct-contact-icon-phone">
+                        📞
+                    </div>
+                    <div class="direct-contact-info">
+                        <div class="direct-contact-label">Позвонить продавцу</div>
+                        <div class="direct-contact-val" id="reservePhoneVal">+7 (999) 123-45-67</div>
+                        <div class="direct-contact-hint">Нажмите для прямого вызова</div>
+                    </div>
+                    <div class="direct-contact-action direct-contact-action-phone">
+                        Вызов
+                    </div>
+                </a>
+            </div>
+
+            <!-- Превью текста, который подставится в письмо -->
+            <div class="order-preview-box">
+                <div class="order-preview-title">📝 Текст заказа для письма:</div>
+                <div id="reserveEmailBodyPreview" style="font-style: italic; word-break: break-word;"></div>
+            </div>
+
+            <div style="margin-top: 18px; text-align: center;">
+                <button type="button" class="btn btn-outline btn-full" onclick="closeReserveModal()" style="font-size: 0.9rem; padding: 10px;">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Успешный заказ -->
+    <div id="successModal" class="modal">
+        <div class="modal-overlay" onclick="closeSuccessModal()"></div>
+        <div class="modal-content" style="max-width: 440px;">
+            <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
+            <div class="order-success-card">
+                <div class="order-success-icon">🎉</div>
+                <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Заявка принята!</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                    Расходники забронированы. Продавец свяжется с вами по указанному телефону для подтверждения заказа.
+                </p>
+                <div class="order-id-badge" id="successOrderId">MM-0000</div>
+                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; text-align: left; font-size: 0.85rem; margin-bottom: 16px;">
+                    <div>Товар: <strong id="successProductName" style="color: var(--text-primary);">—</strong></div>
+                    <div style="margin-top: 4px;">Телефон: <strong id="successCustomerPhone" style="color: var(--text-primary);">—</strong></div>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="closeSuccessModal()">Отлично, спасибо!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: ТЕСТОВОЕ ПИСЬМО -->
+    <div id="testEmailModal" class="modal">
+        <div class="modal-overlay" onclick="closeTestEmailModal()"></div>
+        <div class="modal-content" style="max-width: 540px;">
+            <button class="modal-close" onclick="closeTestEmailModal()">&times;</button>
+            <div style="text-align: center; margin-bottom: 16px;">
+                <div style="font-size: 2.5rem; margin-bottom: 6px;">✉️</div>
+                <h3 style="margin: 0; font-size: 1.3rem;">Проверка почтового уведомления</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Вот как выглядит письмо, которое отправляется при поступлении заказа
+                </p>
+            </div>
+
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 0.88rem;">
+                <div style="padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px;">
+                    <div><strong>От кого (SMTP):</strong> <span id="testEmailSender" style="color:var(--text-secondary);">—</span> (<span id="testEmailServer">—</span>)</div>
+                    <div style="margin-top: 4px;"><strong>Кому (Получатель):</strong> <span id="testEmailRecipient" style="color:var(--accent); font-weight:600;">—</span></div>
+                    <div style="margin-top: 4px;"><strong>Тема:</strong> 📦 Маркус-март — Новый заказ: Хомуты для рамы катамарана 40 мм</div>
+                </div>
+                <div style="line-height: 1.6; color: var(--text-primary);">
+                    <p style="margin: 0 0 8px;"><strong>Поступило новое бронирование!</strong></p>
+                    <p style="margin: 0 0 6px;">Товар: <strong>Хомуты для рамы катамарана 40 мм (4 шт)</strong></p>
+                    <p style="margin: 0 0 6px;">Сумма: <strong>1 800 ₽</strong></p>
+                    <p style="margin: 0 0 6px;">Клиент: <strong>Дмитрий (Клуб Сплав)</strong> (тел: <strong>+7 (922) 145-88-21</strong>)</p>
+                    <p style="margin: 0; color: var(--text-muted);">Примечание: <em>«Срочно нужно 4 хомута 40 мм, выезжаем в пятницу!»</em></p>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid var(--success); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; color: var(--success); text-align: center;">
+                ✅ Связь проверена! Уведомления о заказах будут приходить на указанный email.
+            </div>
+
+            <button class="btn btn-primary btn-full" style="margin-top: 16px;" onclick="closeTestEmailModal()">
+                Отлично, закрыть
+            </button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: Редактирование / Добавление товара (Управление складом) -->
+    <div id="productEditModal" class="modal">
+        <div class="modal-overlay" onclick="closeProductEditModal()"></div>
+        <div class="modal-content" style="max-width: 560px;">
+            <button class="modal-close" onclick="closeProductEditModal()">&times;</button>
+            <h3 id="productEditModalTitle">✏️ Редактирование товара</h3>
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:18px;">
+                Изменения названия, цены, описания, иконки или фото моментально отобразятся на витрине сайта.
+            </p>
+
+            <form id="productEditForm" onsubmit="handleProductEditSubmit(event)">
+                <input type="hidden" id="editProductId" value="">
+
+                <div class="form-group">
+                    <label for="editProductName">Наименование товара *</label>
+                    <input type="text" id="editProductName" required class="form-input" placeholder="Например: Хомуты 40 мм">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="editProductPrice">Цена (₽) *</label>
+                        <input type="number" id="editProductPrice" required min="0" class="form-input" placeholder="450">
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="editProductStock">Остаток на складе (шт) *</label>
+                        <input type="number" id="editProductStock" required min="0" class="form-input" placeholder="10">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="editProductCategory">Категория *</label>
+                        <select id="editProductCategory" class="form-input" style="background:var(--bg-input); color:var(--text-primary); cursor:pointer;">
+                            <option value="rafting">🌊 Для катамаранов и сплавов</option>
+                            <option value="tent">⛺ Колышки и дуги палаток</option>
+                            <option value="hardware">🔧 Фурнитура и ремнаборы</option>
+                            <option value="souvenirs">✨ Сувениры и талисманы</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="editProductIcon">Иконка-эмодзи (для витрины)</label>
+                        <input type="text" id="editProductIcon" class="form-input" placeholder="🛶, ⛺, 🔧, 🚀, ⚓" maxlength="4">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editProductBadge">Бейдж / плашка</label>
+                    <input type="text" id="editProductBadge" class="form-input" placeholder="Хит сплавов, Теряется чаще всего...">
+                </div>
+
+                <div class="form-group">
+                    <label for="editProductDescription">Подробное описание *</label>
+                    <textarea id="editProductDescription" rows="4" required class="form-input" placeholder="Для чего предназначен, параметры, комплектность..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editProductImages">Ссылки на фото (через запятую или новую строку)</label>
+                    <textarea id="editProductImages" rows="2" class="form-input" placeholder="./static/uploads/... или https://..."></textarea>
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:3px;">
+                        Если фото нет, на витрине будет красиво отображаться выбранная иконка-эмодзи
+                    </span>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">💾 Сохранить изменения</button>
+                    <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeProductEditModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ПОДВАЛ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-brand">Маркус-март</div>
+            <p>То, что вечно теряется на сплавах и стоянках © 2026</p>
+            <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">
+                Исходный код на <a href="https://github.com/DranKell/markus-mart" target="_blank" style="color: var(--accent); text-decoration: none;">GitHub</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="./static/js/main.js"></script>
+</body>
+</html>
