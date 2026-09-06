@@ -318,6 +318,7 @@ function openAdminModal() {
     const modal = document.getElementById('adminModal');
     renderAdminOrders();
     renderAdminProducts();
+    loadEmailSettings();
     switchAdminTab('tab-admin-orders');
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -799,6 +800,129 @@ function handleSearch(query) {
     const activePill = document.querySelector('.filter-pill.active');
     const category = activePill ? activePill.getAttribute('data-category') : 'all';
     filterProducts(category, activePill);
+}
+
+// ─── НАСТРОЙКИ ПОЧТЫ (EMAIL & SMTP) ───
+const defaultEmailSettings = {
+    smtp_user: "info@markus-mart.ru",
+    smtp_password: "",
+    smtp_server: "smtp.yandex.ru",
+    smtp_port: "465",
+    admin_email: "admin@markus-mart.ru",
+    same_email: false
+};
+
+function getEmailSettings() {
+    try {
+        const stored = localStorage.getItem('markus_email_settings');
+        if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return defaultEmailSettings;
+}
+
+function saveEmailSettings(settings) {
+    localStorage.setItem('markus_email_settings', JSON.stringify(settings));
+}
+
+function loadEmailSettings() {
+    const s = getEmailSettings();
+    const userEl = document.getElementById('adminSmtpUser');
+    const passEl = document.getElementById('adminSmtpPassword');
+    const serverEl = document.getElementById('adminSmtpServer');
+    const portEl = document.getElementById('adminSmtpPort');
+    const adminEmailEl = document.getElementById('adminRecipientEmail');
+    const sameCheckbox = document.getElementById('adminSameEmailCheckbox');
+
+    if (userEl) userEl.value = s.smtp_user || '';
+    if (passEl) passEl.value = s.smtp_password || '';
+    if (serverEl) serverEl.value = s.smtp_server || 'smtp.yandex.ru';
+    if (portEl) portEl.value = s.smtp_port || '465';
+    if (adminEmailEl) adminEmailEl.value = s.admin_email || '';
+    if (sameCheckbox) {
+        const isSame = s.same_email || (s.smtp_user && s.smtp_user === s.admin_email);
+        sameCheckbox.checked = isSame;
+        toggleSameEmail(isSame);
+    }
+}
+
+function applySmtpPreset(provider) {
+    const srv = document.getElementById('adminSmtpServer');
+    const port = document.getElementById('adminSmtpPort');
+    if (!srv || !port) return;
+    if (provider === 'yandex') {
+        srv.value = 'smtp.yandex.ru';
+        port.value = '465';
+    } else if (provider === 'mailru') {
+        srv.value = 'smtp.mail.ru';
+        port.value = '465';
+    } else if (provider === 'gmail') {
+        srv.value = 'smtp.gmail.com';
+        port.value = '587';
+    }
+}
+
+function toggleSameEmail(checked) {
+    const recipient = document.getElementById('adminRecipientEmail');
+    const sender = document.getElementById('adminSmtpUser');
+    if (!recipient) return;
+    if (checked) {
+        if (sender) recipient.value = sender.value;
+        recipient.setAttribute('readonly', 'true');
+        recipient.style.opacity = '0.7';
+    } else {
+        recipient.removeAttribute('readonly');
+        recipient.style.opacity = '1';
+    }
+}
+
+function handleSenderEmailInput(val) {
+    const checkbox = document.getElementById('adminSameEmailCheckbox');
+    if (checkbox && checkbox.checked) {
+        const recipient = document.getElementById('adminRecipientEmail');
+        if (recipient) recipient.value = val;
+    }
+}
+
+function handleEmailSettingsSubmit(e) {
+    e.preventDefault();
+    const sameCheckbox = document.getElementById('adminSameEmailCheckbox');
+    const sender = document.getElementById('adminSmtpUser').value.trim();
+    const recipient = document.getElementById('adminRecipientEmail').value.trim();
+    const settings = {
+        smtp_user: sender,
+        smtp_password: document.getElementById('adminSmtpPassword').value,
+        smtp_server: document.getElementById('adminSmtpServer').value.trim(),
+        smtp_port: document.getElementById('adminSmtpPort').value.trim(),
+        admin_email: sameCheckbox && sameCheckbox.checked ? sender : recipient,
+        same_email: sameCheckbox ? sameCheckbox.checked : false
+    };
+    saveEmailSettings(settings);
+    const alertBox = document.getElementById('emailSettingsSavedAlert');
+    if (alertBox) {
+        alertBox.innerHTML = `✅ Настройки почты успешно сохранены!<br>Все новые заказы будут отправляться на адрес: <strong>${settings.admin_email}</strong>`;
+        alertBox.style.display = 'block';
+        setTimeout(() => alertBox.style.display = 'none', 5000);
+    }
+}
+
+function testEmailSend() {
+    const s = getEmailSettings();
+    const recipient = s.admin_email || 'admin@markus-mart.ru';
+    const sender = s.smtp_user || 'info@markus-mart.ru';
+    const modal = document.getElementById('testEmailModal');
+    if (modal) {
+        document.getElementById('testEmailSender').textContent = sender;
+        document.getElementById('testEmailRecipient').textContent = recipient;
+        document.getElementById('testEmailServer').textContent = `${s.smtp_server}:${s.smtp_port}`;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeTestEmailModal() {
+    const modal = document.getElementById('testEmailModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // ─── ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ───

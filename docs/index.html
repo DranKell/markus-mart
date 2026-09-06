@@ -316,6 +316,9 @@
                 <button class="admin-tab-btn" id="btn-tab-admin-products" onclick="switchAdminTab('tab-admin-products')">
                     🛍️ Управление складом и товарами
                 </button>
+                <button class="admin-tab-btn" id="btn-tab-admin-email" onclick="switchAdminTab('tab-admin-email')">
+                    ✉️ Настройка почты
+                </button>
                 <button class="admin-tab-btn" id="btn-tab-admin-security" onclick="switchAdminTab('tab-admin-security')">
                     🛡️ Безопасность
                 </button>
@@ -376,7 +379,76 @@
                 </div>
             </div>
 
-            <!-- Таб 3: Безопасность -->
+            <!-- Таб 3: Настройки почты -->
+            <div id="tab-admin-email" class="admin-tab-pane" style="display:none;">
+                <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">
+                    Укажите, с какой почты отправлять сообщения и на какой адрес получать уведомления о заказах (почта отправителя и получателя могут совпадать!).
+                </p>
+
+                <div id="emailSettingsSavedAlert" style="display:none; background:var(--success-bg); color:var(--success); border:1px solid var(--success); padding:10px 14px; border-radius:8px; font-size:0.85rem; margin-bottom:16px;"></div>
+
+                <!-- Быстрые пресеты -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:14px; border-radius:10px; margin-bottom:20px;">
+                    <label style="font-weight:600; display:block; margin-bottom:8px; font-size:0.85rem;">⚡ Быстрые настройки популярных провайдеров:</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('yandex')">
+                            🟡 Яндекс.Почта (465 SSL)
+                        </button>
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('mailru')">
+                            🔵 Mail.ru (465 SSL)
+                        </button>
+                        <button type="button" class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="applySmtpPreset('gmail')">
+                            🔴 Gmail (587 TLS)
+                        </button>
+                    </div>
+                </div>
+
+                <form id="adminEmailSettingsForm" onsubmit="handleEmailSettingsSubmit(event)">
+                    <h4 style="margin: 0 0 10px; color:var(--accent); font-size:1rem;">1. Почта-отправитель (SMTP)</h4>
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpUser">Email отправителя *</label>
+                            <input type="email" id="adminSmtpUser" required class="form-input" placeholder="info@markus-mart.ru" oninput="handleSenderEmailInput(this.value)">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpPassword">Пароль приложения SMTP *</label>
+                            <input type="password" id="adminSmtpPassword" class="form-input" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpServer">SMTP сервер *</label>
+                            <input type="text" id="adminSmtpServer" required class="form-input" value="smtp.yandex.ru" placeholder="smtp.yandex.ru">
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label for="adminSmtpPort">SMTP порт *</label>
+                            <input type="number" id="adminSmtpPort" required class="form-input" value="465" placeholder="465">
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 16px 0 10px; color:var(--accent); font-size:1rem;">2. Почта-получатель (куда слать сообщения о заказах)</h4>
+                    <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="adminSameEmailCheckbox" onchange="toggleSameEmail(this.checked)" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="adminSameEmailCheckbox" style="cursor:pointer; font-weight:600; font-size:0.88rem;">
+                            ✉️ Отправлять на ту же почту (совпадает с отправителем)
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminRecipientEmail">Email для получения заказов *</label>
+                        <input type="email" id="adminRecipientEmail" required class="form-input" placeholder="admin@markus-mart.ru">
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-primary" style="flex:2; min-width:200px;">💾 Сохранить настройки почты</button>
+                        <button type="button" class="btn btn-outline" style="flex:1; min-width:180px; border-color:var(--accent); color:var(--accent);" onclick="testEmailSend()">
+                            🧪 Проверить отправку
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Таб 4: Безопасность -->
             <div id="tab-admin-security" class="admin-tab-pane" style="display:none;">
                 <div style="background:var(--bg-secondary); border:1px solid var(--border); padding:20px; border-radius:12px; margin-top:10px;">
                     <h3 style="margin-top:0;">🛡️ Статус защиты магазина</h3>
@@ -472,6 +544,44 @@
                 </div>
                 <button class="btn btn-primary btn-full" onclick="closeSuccessModal()">Отлично, спасибо!</button>
             </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: ТЕСТОВОЕ ПИСЬМО -->
+    <div id="testEmailModal" class="modal">
+        <div class="modal-overlay" onclick="closeTestEmailModal()"></div>
+        <div class="modal-content" style="max-width: 540px;">
+            <button class="modal-close" onclick="closeTestEmailModal()">&times;</button>
+            <div style="text-align: center; margin-bottom: 16px;">
+                <div style="font-size: 2.5rem; margin-bottom: 6px;">✉️</div>
+                <h3 style="margin: 0; font-size: 1.3rem;">Проверка почтового уведомления</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Вот как выглядит письмо, которое отправляется при поступлении заказа
+                </p>
+            </div>
+
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 0.88rem;">
+                <div style="padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px;">
+                    <div><strong>От кого (SMTP):</strong> <span id="testEmailSender" style="color:var(--text-secondary);">—</span> (<span id="testEmailServer">—</span>)</div>
+                    <div style="margin-top: 4px;"><strong>Кому (Получатель):</strong> <span id="testEmailRecipient" style="color:var(--accent); font-weight:600;">—</span></div>
+                    <div style="margin-top: 4px;"><strong>Тема:</strong> 📦 Маркус-март — Новый заказ: Хомуты для рамы катамарана 40 мм</div>
+                </div>
+                <div style="line-height: 1.6; color: var(--text-primary);">
+                    <p style="margin: 0 0 8px;"><strong>Поступило новое бронирование!</strong></p>
+                    <p style="margin: 0 0 6px;">Товар: <strong>Хомуты для рамы катамарана 40 мм (4 шт)</strong></p>
+                    <p style="margin: 0 0 6px;">Сумма: <strong>1 800 ₽</strong></p>
+                    <p style="margin: 0 0 6px;">Клиент: <strong>Дмитрий (Клуб Сплав)</strong> (тел: <strong>+7 (922) 145-88-21</strong>)</p>
+                    <p style="margin: 0; color: var(--text-muted);">Примечание: <em>«Срочно нужно 4 хомута 40 мм, выезжаем в пятницу!»</em></p>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; background: rgba(34, 197, 94, 0.15); border: 1px solid var(--success); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; color: var(--success); text-align: center;">
+                ✅ Связь проверена! Уведомления о заказах будут приходить на указанный email.
+            </div>
+
+            <button class="btn btn-primary btn-full" style="margin-top: 16px;" onclick="closeTestEmailModal()">
+                Отлично, закрыть
+            </button>
         </div>
     </div>
 

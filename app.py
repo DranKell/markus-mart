@@ -517,6 +517,24 @@ def admin_settings():
     flash("Настройки сохранены в .env и применены", "success")
     return redirect(url_for("admin_panel"))
 
+@app.route("/admin/test-email", methods=["POST"])
+def admin_test_email():
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+    test_product = {"name": "Хомуты (скобы) для рамы катамарана 40 мм", "price": 450}
+    test_customer = {
+        "name": "Тестовый Покупатель (Проверка почты)",
+        "phone": "+7 (999) 000-00-00",
+        "email": ADMIN_EMAIL,
+        "note": "Это тестовое сообщение из панели управления Маркус-март. Настройки почты работают корректно!"
+    }
+    success = send_notification_email(test_product, test_customer)
+    if success:
+        flash(f"✅ Тестовое письмо успешно отправлено с '{SMTP_USER}' на '{ADMIN_EMAIL}'!", "success")
+    else:
+        flash(f"❌ Ошибка отправки письма с '{SMTP_USER}' на '{ADMIN_EMAIL}'. Проверьте сервер, порт и пароль приложения SMTP.", "danger")
+    return redirect(url_for("admin_panel"))
+
 @app.route("/admin/add", methods=["POST"])
 def admin_add():
     if not session.get("admin"):
