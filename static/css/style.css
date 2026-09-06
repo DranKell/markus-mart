@@ -2070,6 +2070,33 @@ code {
         padding: 6px 10px;
         font-size: 0.78rem;
     }
+    .direct-contact-card {
+        padding: 12px;
+        gap: 12px;
+    }
+    .direct-contact-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        font-size: 1.4rem;
+        border-radius: 10px;
+    }
+    .direct-contact-val {
+        font-size: 0.98rem;
+    }
+    .direct-contact-label {
+        font-size: 0.7rem;
+    }
+    .direct-contact-hint {
+        font-size: 0.74rem;
+    }
+    .direct-contact-action {
+        padding: 6px 10px;
+        font-size: 0.76rem;
+    }
+    .order-preview-box {
+        padding: 10px 12px;
+        font-size: 0.78rem;
+    }
 }
 
 
