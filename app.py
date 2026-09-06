@@ -413,6 +413,10 @@ def uploaded_file(filename):
 def logo():
     return send_from_directory(os.path.join(BASE_DIR, "templates", "logo"), "logo.png")
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(BASE_DIR, "static"), "favicon.ico")
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     ip = get_client_ip()
