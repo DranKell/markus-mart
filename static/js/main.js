@@ -194,4 +194,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    initNavSloganRotation();
 });
+
+// ─── Интерактивный разворот слогана на 360° по направлению курсора ───
+function initNavSloganRotation() {
+    const slogan = document.querySelector('.nav-slogan');
+    if (!slogan) return;
+
+    let prevX = null;
+    let currentAngle = 0;
+    let isRotating = false;
+
+    slogan.addEventListener('mouseenter', function(e) {
+        prevX = e.clientX;
+    });
+
+    slogan.addEventListener('mousemove', function(e) {
+        if (isRotating) return;
+        if (prevX === null) {
+            prevX = e.clientX;
+            return;
+        }
+
+        const deltaX = e.clientX - prevX;
+        prevX = e.clientX;
+
+        if (Math.abs(deltaX) > 1) {
+            isRotating = true;
+            const direction = deltaX > 0 ? 1 : -1;
+            currentAngle += direction * 360;
+
+            slogan.style.transition = 'transform 0.75s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease';
+            slogan.style.transform = `scaleX(1.18) rotateY(${currentAngle}deg)`;
+
+            setTimeout(() => {
+                isRotating = false;
+            }, 750);
+        }
+    });
+
+    slogan.addEventListener('mouseleave', function() {
+        prevX = null;
+    });
+}
